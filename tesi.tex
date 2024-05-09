@@ -1,0 +1,355 @@
+\documentclass[11pt,a4paper,oneside,openany]{book}
+% ti ho messo 11pt come nel template ufficiale sul sito di matematica
+%Preambolo
+
+%secondo me su proof impazzisce solo sulle osservazioni
+
+\usepackage{xfrac}
+\usepackage{mathrsfs} 
+\usepackage{caption}
+\usepackage{changepage}
+\usepackage{tikz-cd}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[suftesi]{frontespizio} 
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{ragged2e}
+\usepackage{appendix}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{xfrac}
+\usepackage{pgfplots}
+\usepackage{url}
+\usepackage{emptypage}
+\usepackage{wrapfig}
+\usepackage{dsfont}
+\usepackage{makecell}
+\pgfplotsset{compat=1.18}
+\usepackage{csquotes}
+%\usepackage{hyperref} %Ricordati di caricarlo alla fine
+\usepackage{xcolor, soul} %per evidenziare: \hl{highlighted text}
+\sethlcolor{green} %per evidenziare in verde
+
+
+
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\dw}{d_w}
+\DeclareMathOperator{\C}{C_{tc}}
+\DeclareMathOperator{\T}{T}
+\DeclareMathOperator{\MP}{MP}
+\DeclareMathOperator{\KP}{KP}
+\DeclareMathOperator{\K}{K}
+\DeclareMathOperator{\Id}{Id}
+\DeclareMathOperator{\SSpan}{Span}
+%\DeclareMathOperator{\lim}{lim}
+\DeclareMathOperator{\epi}{epi}
+
+
+\newtheorem{example}{Example}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{problem}{Problem}
+
+\numberwithin{definition}{section}
+\numberwithin{theorem}{section}
+\numberwithin{problem}{section}
+
+\newcommand{\nc}{\newcommand}
+\nc{\boB}{{\mathbf{B}}}
+\nc{\boL}{{\mathbf{L}}}
+\nc{\boY}{{\mathbf{Y}}}
+\nc{\boI}{{\mathbf{I}}}
+\nc{\boV}{{\mathbf{V}}}
+\nc{\boS}{{\mathbf{S}}}
+\nc{\tV}{{\Tilde{{V}}}}
+\nc{\tI}{{\Tilde{{I}}}}
+\nc{\tY}{{\Tilde{{Y}}}}
+\nc{\tS}{{\Tilde{{S}}}}
+\nc{\fr}{{\rightarrow}}
+\nc{\co}{{\nabla}}
+\nc{\pf}[1]{#1_{\#}} %push forward
+\newcommand{\la}{\; \longrightarrow \;}
+
+\nc{\cu}{{\barline{\nabla}}}
+\nc{\infint}{(-\infty,\infty]}
+
+
+\nc{\sS}{ \mathscr{S}}
+\nc{\sC}{ \mathscr{C}}
+\nc{\cH}{{\mathcal H}}
+\nc{\cR}{{\mathcal R}}
+\nc{\cA}{{\mathcal A}}
+\nc{\cG}{{\mathcal G}}
+\nc{\cC}{{\mathcal C}}
+\nc{\cD}{{\mathcal D}}
+\nc{\cO}{{\mathcal O}}
+\nc{\cI}{{\mathcal I}}
+\nc{\cB}{{\mathcal B}}
+\nc{\cY}{{\mathcal Y}}
+\nc{\cK}{{\mathcal K}} 
+\nc{\cX}{{\mathcal X}}
+\nc{\cS}{{\mathcal S}}
+\nc{\cE}{{\mathcal E}}
+\nc{\cF}{{\mathcal F}}
+\nc{\cZ}{{\mathcal Z}}
+\nc{\cQ}{{\mathcal Q}}
+\nc{\cP}{{\mathcal P}}
+\nc{\cL}{{\mathcal L}}
+\nc{\cM}{{\mathcal M}}
+\nc{\cN}{{\mathcal N}}
+\nc{\cT}{{\mathcal T}}
+\nc{\cW}{{\mathcal W}}
+\nc{\cU}{{\mathcal U}}
+\nc{\cJ}{{\mathcal J}}
+\nc{\cV}{{\mathcal V}}
+\nc{\bH}{{\mathbb H}}
+\nc{\bA}{{\mathbb A}}
+\nc{\bG}{{\mathbb G}}
+\nc{\bC}{{\mathbb C}}
+\nc{\bO}{{\mathbb O}}
+\nc{\bI}{{\mathbb I}}
+\nc{\bB}{{\mathbb B}}
+\nc{\bY}{{\mathbb Y}}
+\nc{\bK}{{\mathbb K}} 
+\nc{\bX}{{\mathbb X}}
+\nc{\bS}{{\mathbb S}}
+\nc{\bE}{{\mathbb E}}
+\nc{\bF}{{\mathbb F}}
+\nc{\bZ}{{\mathbb Z}}
+\nc{\bQ}{{\mathbb Q}}
+\nc{\bN}{{\mathbb N}}
+\nc{\bP}{{\mathbb P}}
+\nc{\bL}{{\mathbb L}}
+\nc{\bM}{{\mathbb M}}
+\nc{\bT}{{\mathbb T}}
+\nc{\bW}{{\mathbb W}}
+\nc{\bU}{{\mathbb U}}
+\nc{\bD}{{\mathbb D}}
+\nc{\bJ}{{\mathbb J}}
+\nc{\bV}{{\mathbb V}}
+\nc{\bR}{{\mathbb R}}
+
+
+\newcommand{\virgolette}[1]{``#1''} %\virgolette{questo č fra virgolette}%
+%\usepackage{frontespizio}
+\newcommand{\abs}[1]{\lvert#1\rvert}
+
+
+
+%questo mi dà la quadrettatura
+%\usepackage[showframe]{geometry}
+%\savegeometry{origin}
+%\geometry{rmargin=2.6cm,lmargin=2.6cm,tmargin=3cm,bmargin=2.7cm}% for the title page
+\usepackage[utf8]{inputenc}
+
+\newcommand{\RNum}[1]{\uppercase\expandafter{\romannumeral #1\relax}} %romn
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{7} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{7}  % for normal
+
+% Custom colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\usepackage{collectbox}
+
+\newcommand{\mybox}[2]{$\quad$\fbox{
+\begin{minipage}{#1cm}
+
+\hfill\vspace{#2cm}
+\end{minipage}
+}}
+
+
+% For making personal notes, e.g.  "\hsc[inline]{this is a note}"
+\usepackage{xcolor}
+\usepackage{todonotes}
+\newcommand{\ambrogio}[2][]{\todo[color=violet!40!,#1]{\textsf{VW:} #2}}
+\newcommand{\gr}[2][]{\todo[color=green!20,#1]{\textsf{G:} #2}}
+
+
+\usepackage[
+  backend=biber,
+  style=alphabetic,
+  sorting=nty,
+  maxbibnames=99,
+  url=false,  % Exclude URLs
+  % issn = false
+  %doi=false,   % Exclude DOIs
+  %isbn=false
+]{biblatex}
+
+\addbibresource{sample.bib}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTE PRINCIPALE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\allowdisplaybreaks
+\begin{document}
+
+
+
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+\newpage
+
+
+
+
+\section{Idea}
+
+
+
+For the OPF model construction it is convenient to model the network as directed graph
+$(\boB,\boL)$ where $\boB$ is the set of Buses and and $\boL \subset \boB \times \boB$ is the 
+set of branches of the network and for each adjacent buses $k,m$ both $(k,m)$ and $(m,k)$ are
+in $\boL$. So the line $l$ adjacent to $k,m$ is modeled by two edges in the arc $\{(k,m),(m,k)\}$.
+$L$ can be partitioned in $L_0$ and $L_1$ with $|L_0|=|L_1|$ where every line $l$, adjacent 
+to the buses $k,m$ and with a transformer at $k$, is oriented so that $(k,m) \in L_0$ and 
+$(m,k) \in L_1$. We also consider a set $\mathcal{G}$ of generators, partitioned into 
+(possibly empty) subsets $\mathcal{G}_k$ for every bus $k \in \boB$.
+We consider the following convex Jabr relaxation of the OPF problem:
+\begin{align}
+  \label{Jabr equality model}
+  \inf_{\substack{P^G_g, Q^G_g, c_{km}, \\ s_{km}, S_{km}, P_{km}, Q_{km}}} & \sum_{g \in \mathcal{G}}{F_g(P_g^G)} \\
+  \text{Subject to:} & \; \forall km \in \boL \nonumber \\
+  & c_{km}^2 + s_{mk}^2 \leq c_{kk}c_{mm} \quad \text{Jabr constraint} \label{Jabr constraint}\\
+  & P_{km} = G_{kk}c_{kk}+G_{km}c_{km}+B_{km}s_{km} \label{c to P} \\
+  & Q_{km} = -B_{kk}c_{kk}-B_{km}c_{km}+G_{km}s_{km} \label{c to Q}\\
+  & S_{km} = P_{km} + jQ_{km} \label{PQ to S}\\
+  & \text{Power balance constraints:}\; \forall k \in \boB\nonumber \\
+  & \sum_{km \in L}S_{km}+P_k^L+iQ_k^L = \sum_{g \in \mathcal{G}(k)}{P_g^G} + i\sum_{g \in \mathcal{G}(k)}{Q_g^G} \label{Power Flow Constraint J}\\
+  & \text{Power flow, Voltage, and Power generation limits:} \nonumber \\
+  & P_{km}^2 + Q_{km}^2 \leq U_{km} \label{Power Flow Magnitude Constraint J}\\
+  & V_k^{\text{min}^2} \leq c_{kk} \leq V_k^{\text{max}^2} \label{Voltage Magnitude Constraint J} \\
+  & P_g^{\text{min}} \leq P_g^G \leq P_g^{\text{max}}\label{Power generation Magnitude Constraint J} \\
+  & c_{kk} \geq 0 \; \\ 
+  & c_{km} = c_{mk}, \;s_{km} = - s_{mk}.
+  \end{align}
+
+This relaxation is in general not exact. We can recover exactness thanks to the following result:
+\begin{prop}
+  Model \eqref{Jabr equality model} with the additional \emph{loop constraint} \eqref{loop constraint} for every loop in a cycle basis of \((\boB,\boL)\) is exact, we refer to this new model as the \emph{Exact Jabr formulation}
+
+  \begin{equation}
+    \label{loop constraint}
+    \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}=\prod_{k=1}^nc_{k_i,k_i}.
+  \end{equation}
+  \end{prop}
+This result suggests the following approaches to either find a feasible solution or move along the space of feasible solutions.
+\begin{itemize}
+  \item Such relaxation is exact on tree Networks (also known as radial networks). Our objective is, given a network \(\cN = (\boB,\boL)\) which can also not be a tree, consider a radial subnetwork \(\cN' = (\boB,\boL')\), with \(\boL' \subset \boL \) and consider the Jabr model  on \(\cN'\).
+  This solution is not necessarily feasible for the original problem \(\cN\), our objective is to iteratively recover a feasible solution for \(\cN\). 
+  \vspace{1cm}
+  Since the Jabr relaxation is exact on \(\cN'\) it follows that the constraints \ref{Jabr constraint} are respected, the constraints which are violated are the flow constraints on the leaves. We can try to recover feasibility my moving along the solution to the Jabr and Loop constraints.
+  \item Given a feasible solution, find feasible directions.
+\end{itemize}
+
+\section{Feasible directions}
+
+Let \(x_0 = (P_0,Q_0,c_0,s_0)\) be a feasible solution of the OPF problem \eqref{Jabr equality model} with the loop constraints \eqref{loop constraint}.
+We want to find feasible directions \(x_0 = (dP,dQ,dc,ds)\), that is such that \(x_1 = (P_0+dP,Q_0+dQ,c_0+dc)\) is still a feasible solution of the OPF problem.
+We consider each constraint of the Exact Jabr Formulation separately do get feasible directions.
+
+\subsection{Jabr Constraint}
+
+Since \(x_0\), the jabr equality holds: \(c_{ii}c_{jj}= c_{ij}^2+s_{ij}^2\).
+Adding the movement \(dx\) we want that \((c_{ii}+dc_{ii})(c_jj+dc_{jj}) = (c_{ij}+dc_{ij})^2+(s_{ij}+ds_{ij})^2\). By expanding the terms and considering that the equality holds for \(x_0\) this is equivalent to:
+\begin{equation}
+  dc_{ii}dc_{jj}+2c_{ii}dc_{jj}+2dc_{ii}c_{jj}= dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}
+\end{equation}
+For now we consider movements where \(dc_{ii}\) is not zero only on an independent set of nodes in the graph, this way the constraint simplifies to: 
+\begin{equation}
+  dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj} = 0 
+\end{equation}
+The solutions to this constraint can be found by minimizing the following minimization problem:
+\begin{equation}
+  \min  (dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj})^2
+\end{equation}
+Which can be solved by gradient descent methods. Since we want to salve this for all \((i,j)\in \boL\), we instead solve the following:
+\begin{equation}
+  \min  \sum_{(i,j)\in \boL} (dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj})^2
+\end{equation}
+\gr[inline]{Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}
+\addcontentsline{toc}{chapter}{Introduction}
+
+
+\backmatter
+
+\begin{footnotesize}
+
+
+\printbibliography[
+heading=bibintoc,
+title={Bibliography}]
+
+
+
+\end{footnotesize}
+\pagebreak
+\vspace*{1.5cm}
+
+
+
+
+
+
+
+%\end{justify}
+
+
+
+
+
+\end{document}
