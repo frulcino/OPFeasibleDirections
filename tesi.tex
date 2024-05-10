@@ -5,6 +5,7 @@
 %secondo me su proof impazzisce solo sulle osservazioni
 
 \usepackage{xfrac}
+\usepackage{adigraph}
 \usepackage{mathrsfs} 
 \usepackage{caption}
 \usepackage{changepage}
@@ -78,6 +79,7 @@
 \nc{\boI}{{\mathbf{I}}}
 \nc{\boV}{{\mathbf{V}}}
 \nc{\boS}{{\mathbf{S}}}
+\nc{\boG}{\mathcal{G}}
 \nc{\tV}{{\Tilde{{V}}}}
 \nc{\tI}{{\Tilde{{I}}}}
 \nc{\tY}{{\Tilde{{Y}}}}
@@ -85,6 +87,7 @@
 \nc{\fr}{{\rightarrow}}
 \nc{\co}{{\nabla}}
 \nc{\pf}[1]{#1_{\#}} %push forward
+
 \newcommand{\la}{\; \longrightarrow \;}
 
 \nc{\cu}{{\barline{\nabla}}}
@@ -251,14 +254,14 @@
 
 
 
-For the OPF model construction it is convenient to model the network as directed graph
+For the OPF model construction we the network as directed graph
 $(\boB,\boL)$ where $\boB$ is the set of Buses and and $\boL \subset \boB \times \boB$ is the 
 set of branches of the network and for each adjacent buses $k,m$ both $(k,m)$ and $(m,k)$ are
 in $\boL$. So the line $l$ adjacent to $k,m$ is modeled by two edges in the arc $\{(k,m),(m,k)\}$.
-$L$ can be partitioned in $L_0$ and $L_1$ with $|L_0|=|L_1|$ where every line $l$, adjacent 
+$L$ can be partitioned in $\boL_0$ and $L_1$ with $|L_0|=|L_1|$ where every line $l$, adjacent 
 to the buses $k,m$ and with a transformer at $k$, is oriented so that $(k,m) \in L_0$ and 
-$(m,k) \in L_1$. We also consider a set $\mathcal{G}$ of generators, partitioned into 
-(possibly empty) subsets $\mathcal{G}_k$ for every bus $k \in \boB$.
+$(m,k) \in \boL_1$. We also consider a set $\boG$ of generators, partitioned into 
+(possibly empty) subsets $\boG_k$ for every bus $k \in \boB$.
 We consider the following convex Jabr relaxation of the OPF problem:
 \begin{align}
   \label{Jabr equality model}
@@ -317,15 +320,64 @@ The solutions to this constraint can be found by minimizing the following minimi
 \begin{equation}
   \min  (dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj})^2
 \end{equation}
-Which can be solved by gradient descent methods. Since we want to salve this for all \((i,j)\in \boL\), we instead solve the following:
+Which can be solved by gradient descent methods. Since we want to solve this for all \((i,j)\in \boL\), we instead solve the following:
 \begin{equation}
-  \min  \sum_{(i,j)\in \boL} (dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj})^2
+  \min  CJ(dc,ds,dP) = \sum_{(i,j)\in \boL} (dc_{ij}^2+c_{ij}dc_{ij}+ds_{ij}^2+s_{ij}ds_{ij}-2dc_{ii}c_{jj})^2
 \end{equation}
 \gr[inline]{Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}
 \addcontentsline{toc}{chapter}{Introduction}
 
+\subsection{Loop Constraints}
+Unfortunately, the number of monomials to computer for checking the various of loop constraints grows factorially with the length of the cycle. Thus trying to apply a similar method to find feasible directions satisfying the loop constraints as we did for the Jabr constraints would be computationally intractable.
+We can try the following approaches:
+\begin{itemize}
+  \item \textcolor{gray}{Find the cycle basis with minimal weight}
+  \item Each cycle can be broken down by adding auxiliary edges in the Network, decomposing each loop constraints in loop contraints associated to cycle of the desired length. For each auxiliary edge \(e = (e_0,e_1)\) we add the auxiliary variable \(c_e,s_e\), the associated Jabr constraints: \(c_e^2 + s_e^2 = c_{e_0}c_{e_1}\). We can now divide the cycles containing \(e_0\) and \(e_1\) in two cycles containing the edge \(e\) and thus obtaining smaller associated loop contraints.
+  \item Loop constraints of cycles of length equal to 3 or 4 can be rewritten as 2 polynomial constraints of degree 2.
+  
+\end{itemize}
 
+Let us consider the loop constraints on the following cycle:
+\NewAdigraph{threecycle}{
+  1:2;
+  2:2;
+  3:2;
+}{
+  1,2;
+  2,3;
+  3,1;
+}[-]
+\begin{center}
+
+\threecycle{}
+\end{center}
+This corresponds to the following polynomial constraints:
+\begin{equation}
+  p_3 \coloneqq c_{12}(c_{23}c_{31} - s_{23}s_{31})-s_{12}(s_{23}c_{31}+c_{23}s_{31})-c_{11}c_{22}c_{33}
+\end{equation}
+We also define the following polynomials associated to the Jabr constraints at each edge:
+\begin{equation}
+  p_{ij} \coloneqq c_{ij}^2+s_{ij}^2-c_{ii}c_{jj}
+\end{equation}
+and
+\begin{align}
+  q_3^1 &= s_{12}c_{33} + c_{23}s_{31} + s_{23}c_{31} \label{constr: loop decomposition 1}\\
+  d_3^2 &= c_{12}c_{33} + c_{23}c_{31} + s_{23}s_{31} \label{constr: loop decomposition 2}
+\end{align}
+Then, we have the following results which let's us to rewrite the constraints associated to a cycle of length three as two polynomial constraints of degree 2.
+\begin{prop}
+  \begin{equation}
+    \{(c,s)\mid p_3 = p_{12} = p_{23} = p_{31} = 0\} = \{(c,s)\mid q_3^1 = q_3^2 = p_{12} = p_{23} = p_{31} = 0\} 
+  \end{equation}
+\end{prop}
+
+If we don't restrict the possible direction \(dx=(d_c,d_s,d_P)\), imposing that constraints \eqref{constr: loop decomposition 1}, \eqref{constr: loop decomposition 2} hold for \(x + dx\) would impose polynomial constraints on \(dx\).
+Alternatively, since  for example \(q_3^1\) is a bilinear polynomial respect to the vectors \(v_1=(s_{12}, c_{23}, s_{23})\) and \(v_2=(c_{33}, s_{31}, c_{31})\), we can fix the variables in \(v_2\), that is \(dv_2 = 0\) and move along \(v_1\).
+This way constraint \(q_3^1=0\) imposes a linear constraint on \(d_x\). We can proceed on a similar way for \(q_3^2\). We note that one can consider instead to move along \(v_2\) and that there are other possible choices for \(v_1\) and \(v_2\). 
+\gr[inline]{The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}
+\gr[inline]{TODO: think well about possible directions}
 \backmatter
+
 
 \begin{footnotesize}
 
