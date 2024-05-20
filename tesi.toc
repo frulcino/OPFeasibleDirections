@@ -1,6 +1,0 @@
-\babel@toc {english}{}\relax 
-\contentsline {section}{\numberline {0.1}Idea}{2}{}%
-\contentsline {section}{\numberline {0.2}Feasible directions}{3}{}%
-\contentsline {subsection}{\numberline {0.2.1}Jabr Constraint}{3}{}%
-\contentsline {chapter}{Introduction}{4}{}%
-\contentsline {subsection}{\numberline {0.2.2}Loop Constraints}{4}{}%

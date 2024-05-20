@@ -1,63 +1,15 @@
-\documentclass[11pt,a4paper,oneside,openany]{book}
-% ti ho messo 11pt come nel template ufficiale sul sito di matematica
-%Preambolo
+\documentclass{article}
+\usepackage{amsmath} %math fonts
+\usepackage{mathtools} %align and coloneqq...
 
-%secondo me su proof impazzisce solo sulle osservazioni
-
-\usepackage{xfrac}
-\usepackage{adigraph}
-\usepackage{mathrsfs} 
-\usepackage{caption}
-\usepackage{changepage}
-\usepackage{tikz-cd}
-\usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
-\usepackage[T1]{fontenc}
-\usepackage[suftesi]{frontespizio} 
-\usepackage{amsthm}
-\usepackage{bbm}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
-\usepackage{mathtools}
-\usepackage{graphicx}
-\usepackage{rotating}
-\usepackage{setspace}
-\usepackage{color}
-\usepackage{fancyhdr}
-\usepackage{ragged2e}
-\usepackage{appendix}
-\usepackage{tabularx}
-\usepackage{multirow}
-\usepackage{booktabs}
-\usepackage{xfrac}
-\usepackage{pgfplots}
-\usepackage{url}
-\usepackage{emptypage}
-\usepackage{wrapfig}
-\usepackage{dsfont}
-\usepackage{makecell}
-\pgfplotsset{compat=1.18}
-\usepackage{csquotes}
-%\usepackage{hyperref} %Ricordati di caricarlo alla fine
-\usepackage{xcolor, soul} %per evidenziare: \hl{highlighted text}
-\sethlcolor{green} %per evidenziare in verde
+\usepackage{adigraph} %to draw graphs
+\usepackage{xcolor}
+\usepackage{todonotes}
+\newcommand{\ambrogio}[2][]{\todo[color=violet!40!,#1]{\textsf{VW:} #2}}
+\newcommand{\gr}[2][]{\todo[color=green!20,#1]{\textsf{G:} #2}}
 
 
-
-\DeclareMathOperator{\diag}{diag}
-\DeclareMathOperator{\dw}{d_w}
-\DeclareMathOperator{\C}{C_{tc}}
-\DeclareMathOperator{\T}{T}
-\DeclareMathOperator{\MP}{MP}
-\DeclareMathOperator{\KP}{KP}
-\DeclareMathOperator{\K}{K}
-\DeclareMathOperator{\Id}{Id}
-\DeclareMathOperator{\SSpan}{Span}
-%\DeclareMathOperator{\lim}{lim}
-\DeclareMathOperator{\epi}{epi}
-
-
+%theorem enviroments:
 \newtheorem{example}{Example}
 \newtheorem{assumption}{Assumption}
 \newtheorem{definition}{Definition}
@@ -68,9 +20,6 @@
 \newtheorem{observation}[theorem]{Observation}
 \newtheorem{problem}{Problem}
 
-\numberwithin{definition}{section}
-\numberwithin{theorem}{section}
-\numberwithin{problem}{section}
 
 \newcommand{\nc}{\newcommand}
 \nc{\boB}{{\mathbf{B}}}
@@ -80,174 +29,10 @@
 \nc{\boV}{{\mathbf{V}}}
 \nc{\boS}{{\mathbf{S}}}
 \nc{\boG}{\mathcal{G}}
-\nc{\tV}{{\Tilde{{V}}}}
-\nc{\tI}{{\Tilde{{I}}}}
-\nc{\tY}{{\Tilde{{Y}}}}
-\nc{\tS}{{\Tilde{{S}}}}
-\nc{\fr}{{\rightarrow}}
-\nc{\co}{{\nabla}}
-\nc{\pf}[1]{#1_{\#}} %push forward
-
-\newcommand{\la}{\; \longrightarrow \;}
-
-\nc{\cu}{{\barline{\nabla}}}
-\nc{\infint}{(-\infty,\infty]}
+\nc{\cN}{\mathcal{N}}
 
 
-\nc{\sS}{ \mathscr{S}}
-\nc{\sC}{ \mathscr{C}}
-\nc{\cH}{{\mathcal H}}
-\nc{\cR}{{\mathcal R}}
-\nc{\cA}{{\mathcal A}}
-\nc{\cG}{{\mathcal G}}
-\nc{\cC}{{\mathcal C}}
-\nc{\cD}{{\mathcal D}}
-\nc{\cO}{{\mathcal O}}
-\nc{\cI}{{\mathcal I}}
-\nc{\cB}{{\mathcal B}}
-\nc{\cY}{{\mathcal Y}}
-\nc{\cK}{{\mathcal K}} 
-\nc{\cX}{{\mathcal X}}
-\nc{\cS}{{\mathcal S}}
-\nc{\cE}{{\mathcal E}}
-\nc{\cF}{{\mathcal F}}
-\nc{\cZ}{{\mathcal Z}}
-\nc{\cQ}{{\mathcal Q}}
-\nc{\cP}{{\mathcal P}}
-\nc{\cL}{{\mathcal L}}
-\nc{\cM}{{\mathcal M}}
-\nc{\cN}{{\mathcal N}}
-\nc{\cT}{{\mathcal T}}
-\nc{\cW}{{\mathcal W}}
-\nc{\cU}{{\mathcal U}}
-\nc{\cJ}{{\mathcal J}}
-\nc{\cV}{{\mathcal V}}
-\nc{\bH}{{\mathbb H}}
-\nc{\bA}{{\mathbb A}}
-\nc{\bG}{{\mathbb G}}
-\nc{\bC}{{\mathbb C}}
-\nc{\bO}{{\mathbb O}}
-\nc{\bI}{{\mathbb I}}
-\nc{\bB}{{\mathbb B}}
-\nc{\bY}{{\mathbb Y}}
-\nc{\bK}{{\mathbb K}} 
-\nc{\bX}{{\mathbb X}}
-\nc{\bS}{{\mathbb S}}
-\nc{\bE}{{\mathbb E}}
-\nc{\bF}{{\mathbb F}}
-\nc{\bZ}{{\mathbb Z}}
-\nc{\bQ}{{\mathbb Q}}
-\nc{\bN}{{\mathbb N}}
-\nc{\bP}{{\mathbb P}}
-\nc{\bL}{{\mathbb L}}
-\nc{\bM}{{\mathbb M}}
-\nc{\bT}{{\mathbb T}}
-\nc{\bW}{{\mathbb W}}
-\nc{\bU}{{\mathbb U}}
-\nc{\bD}{{\mathbb D}}
-\nc{\bJ}{{\mathbb J}}
-\nc{\bV}{{\mathbb V}}
-\nc{\bR}{{\mathbb R}}
-
-
-\newcommand{\virgolette}[1]{``#1''} %\virgolette{questo č fra virgolette}%
-%\usepackage{frontespizio}
-\newcommand{\abs}[1]{\lvert#1\rvert}
-
-
-
-%questo mi dà la quadrettatura
-%\usepackage[showframe]{geometry}
-%\savegeometry{origin}
-%\geometry{rmargin=2.6cm,lmargin=2.6cm,tmargin=3cm,bmargin=2.7cm}% for the title page
-\usepackage[utf8]{inputenc}
-
-\newcommand{\RNum}[1]{\uppercase\expandafter{\romannumeral #1\relax}} %romn
-% Default fixed font does not support bold face
-\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{7} % for bold
-\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{7}  % for normal
-
-% Custom colors
-\usepackage{color}
-\definecolor{deepblue}{rgb}{0,0,0.5}
-\definecolor{deepred}{rgb}{0.6,0,0}
-\definecolor{deepgreen}{rgb}{0,0.5,0}
-
-\usepackage{listings}
-
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-
-\lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
-    showstringspaces=false,
-    showtabs=false,                  
-    tabsize=2
-}
-
-\lstset{style=mystyle}
-
-\usepackage{collectbox}
-
-\newcommand{\mybox}[2]{$\quad$\fbox{
-\begin{minipage}{#1cm}
-
-\hfill\vspace{#2cm}
-\end{minipage}
-}}
-
-
-% For making personal notes, e.g.  "\hsc[inline]{this is a note}"
-\usepackage{xcolor}
-\usepackage{todonotes}
-\newcommand{\ambrogio}[2][]{\todo[color=violet!40!,#1]{\textsf{VW:} #2}}
-\newcommand{\gr}[2][]{\todo[color=green!20,#1]{\textsf{G:} #2}}
-
-
-\usepackage[
-  backend=biber,
-  style=alphabetic,
-  sorting=nty,
-  maxbibnames=99,
-  url=false,  % Exclude URLs
-  % issn = false
-  %doi=false,   % Exclude DOIs
-  %isbn=false
-]{biblatex}
-
-\addbibresource{sample.bib}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTE PRINCIPALE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\allowdisplaybreaks
 \begin{document}
-
-
-
-
-\tableofcontents
-%\listoffigures
-%\listoftables
-
-\newpage
-
-
 
 
 \section{Idea}
@@ -376,32 +161,8 @@ Alternatively, since  for example \(q_3^1\) is a bilinear polynomial respect to 
 This way constraint \(q_3^1=0\) imposes a linear constraint on \(d_x\). We can proceed on a similar way for \(q_3^2\). We note that one can consider instead to move along \(v_2\) and that there are other possible choices for \(v_1\) and \(v_2\). 
 \gr[inline]{The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}
 \gr[inline]{TODO: think well about possible directions}
-\backmatter
 
-
-\begin{footnotesize}
-
-
-\printbibliography[
-heading=bibintoc,
-title={Bibliography}]
-
-
-
-\end{footnotesize}
-\pagebreak
-\vspace*{1.5cm}
-
-
-
-
-
-
-
-%\end{justify}
-
-
-
-
+\subsection{Flow constraints}
+\subsection{other constraints}
 
 \end{document}
