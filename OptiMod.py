@@ -20,5 +20,5 @@ Qg = m.addVars(len(case["gen"]), name=["Qg_{}".format(i) for i in np.arange(len(
 v = m.addVars(len(case["bus"]), name=["v_{}".format(bus["bus_i"]) for bus in case["bus"]])
 c = m.addVars(len(case["branch"]), name=["c_{}{}".format(branch["fbus"],branch["tbus"]) for branch in case["branch"]])
 s = m.addVars(len(case["branch"]), name=["s_{}{}".format(branch["fbus"],branch["tbus"]) for branch in case["branch"]])
-P = m.addVars(len(case["branch"]), name=["P_{}{}".format(branch["fbus"],branch["tbus"]) for branch in case["branch"]])
-Q = m.addVars(len(case["branch"]), name=["Q_{}{}".format(branch["fbus"],branch["tbus"]) for branch in case["branch"]])
+P = m.addVars([(branch["fbus"],branch["tbus"]) for branch in case["branch"]] + [(branch["tbus"], branch["fbus"]) for branch in case["branch"]])
+Q = m.addVars([(branch["fbus"],branch["tbus"]) for branch in case["branch"]] + [(branch["tbus"], branch["fbus"]) for branch in case["branch"]])
