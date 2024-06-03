@@ -41,8 +41,10 @@
 
 \begin{document}
 
+\section{Random ideas}
 
-\section{Idea}
+
+\section{Jabr Model}
 
 
 
@@ -212,12 +214,12 @@ Where given a graph, we find a cycle basis, we decompose each cycle in a 3/4-cyc
   &c_{kk} + \stc_{kk} \geq 0 \;
 \end{align}
 
-If the optimal solutions of problem \eqref{prob: Step Problem} are feasible steps if and only if their cost is 0.
+If the optimal solutions of problem \eqref{prob: Step Problem} are feasible steps if and only if their cost is 0. 
 Leaven like this one obvious solution is \(dx = 0\). Possible ideas.
 \begin{itemize}
-  \item Impose that the generation cost must decrease, by putting the scalar product of \(\st\) with the gradient of the cost function \(\opfcost\) in \(x\) to be smaller than 0. \(\st \nabla F(x) \leq 0 \). With this additional constraint if it's an equality then the family of the possible direction doesn't have a decreasing cost direction.
+  \item Impose that the generation cost must decrease, by putting the scalar product of \(\st\) with the gradient of the cost function \(\opfcost\) in \(x\) to be smaller than 0. \(\st \nabla F(x) < 0 \). With this additional constraint if it's an equality then the family of the possible direction doesn't have a decreasing cost direction.
 \end{itemize}
-The problem \eqref{prob: Step Problem} can be solved with a projected gradient descent algorithm.
-
+Since the constraints are affine, problem \eqref{prob: Step Problem} can be solved with a projected gradient descent algorithm.
+\gr[]{If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}
 
 \end{document}
