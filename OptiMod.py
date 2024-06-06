@@ -13,49 +13,51 @@ from gurobipy import GRB
 import networkx as nx
 from itertools import chain, combinations
 
+#TODO che radiants stuff
 
-def create_admittance_matrix(case):
+def create_admittance_matrix(case, branch):
     """
     Creates admittance matrix of n, since it's sparse it's saved as a dictionary of tuples (indexes)
     
     return: G, B s.t. Y = G + Bi
+    
     """
     
     G = {}
     B = {}
-    for branch in case["branch"]:
-        fbus = branch["fbus"]
-        tbus = branch["tbus"]
-        r = branch["r"] # real part of impendence
-        x = branch["x"] # complex part of impendence
-        b = branch["b"] # line charging susceptance
-        t = branch["ratio"]
-        v = branch["angle"]
-        y = r + x*1j # impendence
-        A = (1 / y + (b/2)*1j) #no trasformer admittance
-        Y22 = A 
-        if t == 0: 
-            Y11 = A
-            Y21 = - 1 / y
-            Y12 = - 1 / y
-        else:
-            Y11 = A / t**2
-            Y12 = - 1 / (y * t * np.exp(-v*1j))
-            Y21 = - 1 / (y * t * np.exp(v*1j))
-        
-        G[(fbus,fbus)] = Y11.real
-        G[(fbus,tbus)] = Y12.real
-        G[(tbus,fbus)] = Y21.real
-        G[(tbus,tbus)] = Y22.real
-        
-        B[(fbus,fbus)] = Y11.imag
-        B[(fbus,tbus)] = Y12.imag
-        B[(tbus,fbus)] = Y21.imag
-        B[(tbus,tbus)] = Y22.imag
+    #for branch in case["branch"]:
+    fbus = branch["fbus"]
+    tbus = branch["tbus"]
+    r = branch["r"] # real part of impendence
+    x = branch["x"] # complex part of impendence
+    b = branch["b"] # line charging susceptance
+    t = branch["ratio"]
+    v = branch["angle"]
+    z = r + x*1j # impendence
+    y = 1/z
+    A = (y + (b/2)*1j) #no trasformer admittance
+    
+    if t == 0: 
+        t = 1 # optimod lo fa quindi io lo faccio
+    
+    Y22 = A 
+    Y11 = A / t**2
+    Y12 = - y / (t * np.exp(-v*1j))
+    Y21 = - y / (t * np.exp(v*1j))
+    
+    G[(fbus,fbus)] = Y11.real
+    G[(fbus,tbus)] = Y12.real
+    G[(tbus,fbus)] = Y21.real
+    G[(tbus,tbus)] = Y22.real
+    
+    B[(fbus,fbus)] = Y11.imag
+    B[(fbus,tbus)] = Y12.imag
+    B[(tbus,fbus)] = Y21.imag
+    B[(tbus,tbus)] = Y22.imag
         
     return G,B
 
-case = datasets.load_opf_example("case9")
+case = datasets.load_opf_example("case14")
 # result = opf.solve_opf(case, opftype="AC")
 
 # dictionary generator: bus since one bus can have more than one generator
@@ -101,13 +103,17 @@ Q = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
 for (i, j) in branches:
     m.addConstr(c[(i, j)] ** 2 + s[(i, j)] ** 2 <= v[i] * v[j])  # (2)
 
-
-G, B = create_admittance_matrix(case)
-for (i, j) in branches:
-    m.addLConstr(P[(i, j)] == G[(i, i)] * v[i] + G[(i, j)] * c[(i, j)] + B[(i, j)] * s[(i, j)])   # (3)
-    m.addLConstr(Q[(i, j)] == -B[(i, i)] * v[i] - B[(i, j)] * c[(i, j)] + G[(i, j)] * s[(i, j)])  # (4)
-    m.addLConstr(P[(j, i)] == G[(j, j)] * v[j] + G[(j, i)] * c[(i, j)] - B[(j, i)] * s[(i, j)])   # (3)
-    m.addLConstr(Q[(j, i)] == -B[(j, j)] * v[j] - B[(j, i)] * c[(i, j)] - G[(j, i)] * s[(i, j)])  # (4)
+#m.addLConstr(v[1] == 1)
+baseMVA = case["baseMVA"]
+for branch in case["branch"]:
+    i = branch["fbus"]
+    j = branch["tbus"]
+    G, B = create_admittance_matrix(case, branch)
+    print("MIAO")
+    m.addLConstr(P[(i, j)] / (baseMVA) == G[(i, i)] * v[i] + G[(i, j)] * c[(i, j)] + B[(i, j)] * s[(i, j)])   # (3)
+    m.addLConstr(Q[(i, j)] / (baseMVA) == -B[(i, i)] * v[i] - B[(i, j)] * c[(i, j)] + G[(i, j)] * s[(i, j)])  # (4)
+    m.addLConstr(P[(j, i)] / (baseMVA) == G[(j, j)] * v[j] + G[(j, i)] * c[(i, j)] - B[(j, i)] * s[(i, j)])   # (3)
+    m.addLConstr(Q[(j, i)] / (baseMVA) == -B[(j, j)] * v[j] - B[(j, i)] * c[(i, j)] - G[(j, i)] * s[(i, j)])  # (4)
 
 for i in buses:
     gen_at_bus = [g for g in generators.keys() if generators[g] == i]
@@ -122,19 +128,53 @@ for index, gen in enumerate(case["gen"]):
     if gencost["costtype"] == 2: #polynomial cost
         c = gencost["costvector"]
         if len(c) == 3:
-            totalcost = c[0] * Pg[index] ** 2 + c[1] * Pg[index] + c[2]
+            totalcost += c[0] * Pg[index] ** 2 + c[1] * Pg[index] + c[2]
             
 m.setObjective(totalcost)
+
+m.optimize()
+
+
+#%%
+branch = case["branch"][0]
+fbus = branch["fbus"]
+tbus = branch["tbus"]
+r = branch["r"] # real part of impendence
+x = branch["x"] # complex part of impendence
+b = branch["b"] # line charging susceptance
+t = branch["ratio"]
+v = branch["angle"]
+z = r + x*1j # impendence
+y = 1/z
+A = (y + (b/2)*1j) #no trasformer admittance
+
+if t == 0: 
+    t = 1 # optimod lo fa quindi io lo faccio
+
+Y22 = A 
+Y11 = A / t**2
+Y12 = - y / (t * np.exp(-v*1j))
+Y21 = - y / (t * np.exp(v*1j))
+
+G[(fbus,fbus)] = Y11.real
+G[(fbus,tbus)] = Y12.real
+G[(tbus,fbus)] = Y21.real
+G[(tbus,tbus)] = Y22.real
+
+B[(fbus,fbus)] = Y11.imag
+B[(fbus,tbus)] = Y12.imag
+B[(tbus,fbus)] = Y21.imag
+B[(tbus,tbus)] = Y22.imag
 
 #eheh infeasible eheh
 
 # Loop constraints and extended flower inequalities
-G = nx.Graph()  # building the support graph of the network
-for (i, j) in branches:
-    G.add_edge(i, j)
-loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
-
-for loop in loops:
-    As = chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))
+#G = nx.Graph()  # building the support graph of the network
+#for (i, j) in branches:
+#    G.add_edge(i, j)
+#loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
+#
+#for loop in loops:
+#    As = chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))
 
 
