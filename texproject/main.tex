@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{amsmath} %math fonts
 \usepackage{mathtools} %align and coloneqq...
-
+\usepackage{amsthm} %proofs
 \usepackage{adigraph} %to draw graphs
 \usepackage{xcolor}
 \usepackage{todonotes}
@@ -37,11 +37,12 @@
 \nc{\boS}{{\mathbf{S}}}
 \nc{\boG}{\mathcal{G}}
 \nc{\cN}{\mathcal{N}}
-
+\nc{\cI}{\mathcal{I}}
+\nc{\cP}{\mathcal{P}}
+\nc{\cE}{\mathcal{E}}
 
 \begin{document}
 
-\section{Random ideas}
 
 
 \section{Jabr Model}
@@ -73,7 +74,7 @@ We consider the following convex Jabr relaxation of the OPF problem:
   & P_g^{\text{min}} \leq P_g^G \leq P_g^{\text{max}}\label{Power generation Magnitude Constraint J} \\
   & c_{kk} \geq 0 \; \\ 
   & c_{km} = c_{mk}, \;s_{km} = - s_{mk}.
-  \end{align}
+\end{align}
 
 This relaxation is in general not exact. We can recover exactness thanks to the following result:
 \begin{prop}
@@ -84,14 +85,81 @@ This relaxation is in general not exact. We can recover exactness thanks to the 
     \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}=\prod_{k=1}^nc_{k_i,k_i}.
   \end{equation}
   \end{prop}
+
+In \textcolor{red}{cite}, auxiliary branches were added to the network, dividing each loop in smaller loops, to decrease the degree of the polynomials defining the loop constraint. Then Mc Cormick linearization was applied.
+The problem with this approach is that one exiliary branch is added for every branch in the loop.
 This result suggests the following approaches to either find a feasible solution or move along the space of feasible solutions.
 \begin{itemize}
+  \item Since the loop constraint is multilinear in it's variables, we can consider linear relaxations called \emph{Flower inequalities}, which generalize che classical Mc Cormick relaxations of products of variables. 
   \item Such relaxation is exact on tree Networks (also known as radial networks). Our objective is, given a network \(\cN = (\boB,\boL)\) which can also not be a tree, consider a radial subnetwork \(\cN' = (\boB,\boL')\), with \(\boL' \subset \boL \) and consider the Jabr model  on \(\cN'\).
   This solution is not necessarily feasible for the original problem \(\cN\), our objective is to iteratively recover a feasible solution for \(\cN\). 
   \vspace{1cm}
   Since the Jabr relaxation is exact on \(\cN'\) it follows that the constraints \ref{Jabr constraint} are respected, the constraints which are violated are the flow constraints on the leaves. We can try to recover feasibility my moving along the solution to the Jabr and Loop constraints.
   \item Given a feasible solution, find feasible directions.
 \end{itemize}
+
+\section{Linearization of loop constraints}
+
+To find feasible relaxations of the loop constraint we follow \textcolor{red}{cite}. It must be noted that a major difference in our approach is that the OPF is not a multilinear optimization problem. So first we show that the same results in \textcolor{red}{cite} can be applied to the OPF.
+
+Consider a set of multilinear constraints:
+\begin{align}
+  \sum_{I \in \cI_j}c_I^j\prod_{v \in I_j} x_v \quad \forall I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \\
+  x_v \in [l_v,u_v] \quad \forall v \in V
+\end{align}
+Where \(V\) denotes the variables and \(\cI_j \in \cP(V)\), for \(j = 1,\ldots,m\) are the variables of the monomials appearing in the j-th homogenous constraint.
+A straight forward linearization is to introduce a variables \(z_I\) for every subset \(I\) of variables appearing in the constraints. Thus we obtain the following equivalent problem.
+
+\begin{align}
+  \sum_{I \in \cI_j}c_I^jz_I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \label{constr: linearized multilinear constraint} \\
+  z_I = \prod_{i \in I} x_i \quad \forall I \in \cE \coloneqq \cup_{j=1}^m I_j \\
+  x_v \in [l_v,u_v] \quad \forall v \in V
+\end{align}
+
+By affine afformation we can assume the variables \(x_v\) to be in the form \(c_v \in [0,1]\). Note that such affine transformations need to be handled with care, we will cover this in subsection \ref{subsection:Handling affine trasformations}.\
+Since contraint \eqref{constr: linearized multilinear constraint} is now linear, we are now interested in the linearization of the following set \(Pr \coloneqq  \{(x,z) \in [0,1]^V \times [0,1]^{\cE} \mid z_I = \prod_{i \in I} \forall I \in \cE\}\).
+If such constraints were the only ones, and if the cost was also multilinear, we would know that the solution would be on one of the vertices of the hypercube and the observation that follows would be trivially true. Since in the OPF the cost is not multilinear and there are other types of constraints we show that this is also a relaxation for \(Pr\).
+\begin{observation}[Standard form relaxation]\label{obs: standard form relaxation}
+  The polyhedral \(PrR\) defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4} is a relaxation of \(Pr\).
+  \gr[]{fixalignment}
+  \begin{align}
+    z_I &\leq x_v   \quad\forall v \in I \in \cE \label{constr: PrR1} \\
+    z_I + \sum_{v \in I}(1-x_v) &\geq 1 \quad \forall I \in \cE \label{constr: PrR2}\\
+    z_I &\geq 0  \quad\forall I \in \cE \label{constr: PrR3}\\
+    x_v &\in [0,1]  \quad \forall v \in V \label{constr: PrR4}
+  \end{align}
+\end{observation}
+\begin{proof}
+We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
+Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
+This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
+This is trivially true for \(n = 1\). If \(n > 1 \), let \(HC \coloneqq [0,1]^n \) denote the hypercube, Let \(F_i \coloneqq \{x \in HC \mid x_i = 0\}\) and \(G_i \coloneqq \{x \in HC \mid x_i = 1\}\) denote the faces of the hypercube. We have that \[ HC = (HC \cap (F_1 + \langle e_1 - e_2\rangle)) \cup (HC \cap (G_2 + \langle e_1 - e_2\rangle)).\]
+Thus it is sufficient to show that for every \(x \in F_1\) and \(y \in G_2\) the function \(f_x(u) \coloneqq a(x + u(e_2 - e_1))\) and the funciton \(g_y(v) \coloneqq a(y + v(e_1 - e_2))\) are non negative for all \(u \in [0,x_2]\) and \(v \in [x_1, 1]\) respectively. Expanding the expression of \(f_x\) we obtain:
+\[
+f_x(u) = a( u, x_2 - u, x_3, x_4, \ldots, x_n) = - u^2 \prod_{i=3}^nx_i + u \prod_{i=2}^nx_n - sum_{i=2}^nx_i + n - 1
+\]
+The second derivate of \(f_x(u)\) respect to \(u\) is thus \(f''_x(u) = -2 \prod_{i = 3} x_i \leq 0\) and is thus concave respect to \(v\). The value of \(f_x\) on the boundary points \(u =0,x_1\) is:
+\begin{align}
+  f_x(0) = a(0, x_2, \ldots, x_n) = \sum_{i=2}^nx_i + n - 1  \geq 0 \\
+  f_x(x_2) = a(x_2, 0 , x_3, \ldots, x_n) = \prod_{i=2}^nx_i - \sum_{i=2}^nx_i + n - 2 \geq 0.
+\end{align}
+Where the second inequality is true by induction. Thus for every \(x \in F_1\) for every \(u \in [x_2,1]\) we have \(f_x \geq 0\).
+Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we have \(g_y \geq 0\). Thus for all \(x \in C\), \(a(x) \geq 0\) which concludes the proof. 
+\end{proof}
+
+The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{obs: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
+Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is that we cannot restict the hypercuber \(C\) to its vertices becase other point could also be optimal for the OPF problem. Se we check the additional flower inequalities are still valid for \(Pr\).
+
+\subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
+It must the noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given an monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
+Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
+
+
+
+
+
+
+
 
 \section{Feasible directions}
 

@@ -14,6 +14,7 @@ import networkx as nx
 from itertools import chain, combinations
 
 #TODO che radiants stuff
+# c'è da fiss
 
 def create_admittance_matrix(case, branch):
     """

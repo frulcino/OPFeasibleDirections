@@ -1,6 +1,5 @@
 \relax 
-\@writefile{toc}{\contentsline {section}{\numberline {1}Random ideas}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Jabr Model}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Jabr Model}{1}{}\protected@file@percent }
 \newlabel{Jabr equality model}{{1}{1}{}{}{}}
 \newlabel{Jabr constraint}{{2}{1}{}{}{}}
 \newlabel{c to P}{{3}{1}{}{}{}}
@@ -11,32 +10,45 @@
 \newlabel{Voltage Magnitude Constraint J}{{8}{1}{}{}{}}
 \newlabel{Power generation Magnitude Constraint J}{{9}{1}{}{}{}}
 \newlabel{loop constraint}{{12}{1}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Feasible directions}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Jabr Constraint}{2}{}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}{3}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid1}{20088094}{41848741}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Loop Constraints}{3}{}\protected@file@percent }
-\newlabel{constr: loop decomposition 1}{{19}{3}{}{}{}}
-\newlabel{constr: loop decomposition 2}{{20}{3}{}{}{}}
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}{4}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid3}{20088094}{30673034}
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} TODO: think well about possible directions}{4}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid4}{20088094}{28818002}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Flow constraints}{4}{}\protected@file@percent }
-\newlabel{Power Flow Constraint J}{{25}{4}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Other constraints}{4}{}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} what about this one?}{4}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid5}{20088094}{11263056}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Step Problem}{5}{}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} how?}{5}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid6}{21230213}{39876745}
-\pgfsyspdfmark {pgfid9}{34243870}{39889033}
-\pgfsyspdfmark {pgfid10}{36357406}{39665119}
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} Da riscrivere meglio, i vincoli su \(q_e^1,q_e^2\) sono per ciascun arco in un ciclo in una base di cicli, ma se lo stesso arco è in due basi di cicli diverse, se i due cicli non hanno nodi in comune allora sono due vincoli diversi}{5}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid11}{20088094}{37517868}
-\newlabel{prob: Step Problem}{{29}{5}{}{}{}}
-\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}{5}{}\protected@file@percent }
-\pgfsyspdfmark {pgfid12}{16925997}{14801129}
-\pgfsyspdfmark {pgfid15}{34243870}{14813417}
-\pgfsyspdfmark {pgfid16}{36357406}{14589503}
-\gdef \@abspage@last{5}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Linearization of loop constraints}{2}{}\protected@file@percent }
+\newlabel{constr: linearized multilinear constraint}{{15}{2}{}{}{}}
+\newlabel{obs: standard form relaxation}{{2}{3}{}{}{}}
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} fixalignment}{3}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid1}{23241196}{35147051}
+\pgfsyspdfmark {pgfid4}{34243870}{35159339}
+\pgfsyspdfmark {pgfid5}{36357406}{34935425}
+\newlabel{constr: PrR1}{{18}{3}{}{}{}}
+\newlabel{constr: PrR2}{{19}{3}{}{}{}}
+\newlabel{constr: PrR3}{{20}{3}{}{}{}}
+\newlabel{constr: PrR4}{{21}{3}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Handling affine trasformations}{4}{}\protected@file@percent }
+\newlabel{subsection:Handling affine trasformations}{{2.1}{4}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Feasible directions}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Jabr Constraint}{4}{}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}{5}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid6}{20088094}{27550963}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Loop Constraints}{5}{}\protected@file@percent }
+\newlabel{constr: loop decomposition 1}{{30}{6}{}{}{}}
+\newlabel{constr: loop decomposition 2}{{31}{6}{}{}{}}
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}{6}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid8}{20088094}{12637295}
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} TODO: think well about possible directions}{6}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid9}{20088094}{10782263}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Flow constraints}{7}{}\protected@file@percent }
+\newlabel{Power Flow Constraint J}{{36}{7}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Other constraints}{7}{}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} what about this one?}{7}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid10}{20088094}{28047093}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Step Problem}{7}{}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} how?}{7}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid11}{21230213}{20812651}
+\pgfsyspdfmark {pgfid14}{34243870}{20824939}
+\pgfsyspdfmark {pgfid15}{36357406}{20601025}
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} Da riscrivere meglio, i vincoli su \(q_e^1,q_e^2\) sono per ciascun arco in un ciclo in una base di cicli, ma se lo stesso arco è in due basi di cicli diverse, se i due cicli non hanno nodi in comune allora sono due vincoli diversi}{7}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid16}{20088094}{18453774}
+\newlabel{prob: Step Problem}{{40}{8}{}{}{}}
+\@writefile{tdo}{\contentsline {todo}{\textsf  {G:} If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}{8}{}\protected@file@percent }
+\pgfsyspdfmark {pgfid17}{16925997}{22599075}
+\pgfsyspdfmark {pgfid20}{34243870}{22611363}
+\pgfsyspdfmark {pgfid21}{36357406}{22387449}
+\gdef \@abspage@last{8}
