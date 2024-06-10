@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{amsmath} %math fonts
 \usepackage{mathtools} %align and coloneqq...
+\usepackage{amssymb} %math symbols
 \usepackage{amsthm} %proofs
 \usepackage{adigraph} %to draw graphs
 \usepackage{xcolor}
@@ -36,7 +37,9 @@
 \nc{\boV}{{\mathbf{V}}}
 \nc{\boS}{{\mathbf{S}}}
 \nc{\boG}{\mathcal{G}}
+\nc{\integers}{\mathbb{Z}}
 \nc{\cN}{\mathcal{N}}
+\nc{\cC}{\mathcal{C}}
 \nc{\cI}{\mathcal{I}}
 \nc{\cP}{\mathcal{P}}
 \nc{\cE}{\mathcal{E}}
@@ -72,7 +75,9 @@ We consider the following convex Jabr relaxation of the OPF problem:
   & P_{km}^2 + Q_{km}^2 \leq U_{km} \label{Power Flow Magnitude Constraint J}\\
   & V_k^{\text{min}^2} \leq c_{kk} \leq V_k^{\text{max}^2} \label{Voltage Magnitude Constraint J} \\
   & P_g^{\text{min}} \leq P_g^G \leq P_g^{\text{max}}\label{Power generation Magnitude Constraint J} \\
-  & c_{kk} \geq 0 \; \\ 
+  &  c_{kk} \geq 0 \; \\
+  & V_k^{\text{max}} V_m^{\text{max}} \geq c_{km} \geq 0 \; \\ 
+  & - V_k^{\text{max}} V_m^{\text{max}} \leq s_{km} \leq V_k^{\text{max}} V_m^{\text{max}} \; \\
   & c_{km} = c_{mk}, \;s_{km} = - s_{mk}.
 \end{align}
 
@@ -108,7 +113,7 @@ Consider a set of multilinear constraints:
   x_v \in [l_v,u_v] \quad \forall v \in V
 \end{align}
 Where \(V\) denotes the variables and \(\cI_j \in \cP(V)\), for \(j = 1,\ldots,m\) are the variables of the monomials appearing in the j-th homogenous constraint.
-A straight forward linearization is to introduce a variables \(z_I\) for every subset \(I\) of variables appearing in the constraints. Thus we obtain the following equivalent problem.
+A straight forward linearization is to introduce a variable \(z_I\) for every subset \(I\) of variables appearing in the constraints. Thus we obtain the following equivalent problem.
 
 \begin{align}
   \sum_{I \in \cI_j}c_I^jz_I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \label{constr: linearized multilinear constraint} \\
@@ -119,8 +124,8 @@ A straight forward linearization is to introduce a variables \(z_I\) for every s
 By affine afformation we can assume the variables \(x_v\) to be in the form \(c_v \in [0,1]\). Note that such affine transformations need to be handled with care, we will cover this in subsection \ref{subsection:Handling affine trasformations}.\
 Since contraint \eqref{constr: linearized multilinear constraint} is now linear, we are now interested in the linearization of the following set \(Pr \coloneqq  \{(x,z) \in [0,1]^V \times [0,1]^{\cE} \mid z_I = \prod_{i \in I} \forall I \in \cE\}\).
 If such constraints were the only ones, and if the cost was also multilinear, we would know that the solution would be on one of the vertices of the hypercube and the observation that follows would be trivially true. Since in the OPF the cost is not multilinear and there are other types of constraints we show that this is also a relaxation for \(Pr\).
-\begin{observation}[Standard form relaxation]\label{obs: standard form relaxation}
-  The polyhedral \(PrR\) defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4} is a relaxation of \(Pr\).
+\begin{definition}[Standard form relaxation]\label{def: standard form relaxation}
+  Let the polyhedral \(PrR\) be defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4}.
   \gr[]{fixalignment}
   \begin{align}
     z_I &\leq x_v   \quad\forall v \in I \in \cE \label{constr: PrR1} \\
@@ -128,27 +133,26 @@ If such constraints were the only ones, and if the cost was also multilinear, we
     z_I &\geq 0  \quad\forall I \in \cE \label{constr: PrR3}\\
     x_v &\in [0,1]  \quad \forall v \in V \label{constr: PrR4}
   \end{align}
-\end{observation}
-\begin{proof}
-\gr{This is actually much easier since by fixing all points except one we have an affine functions}
-We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
-Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
-This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
-This is trivially true for \(n = 1\). If \(n > 1 \), let \(HC \coloneqq [0,1]^n \) denote the hypercube, Let \(F_i \coloneqq \{x \in HC \mid x_i = 0\}\) and \(G_i \coloneqq \{x \in HC \mid x_i = 1\}\) denote the faces of the hypercube. We have that \[ HC = (HC \cap (F_1 + \langle e_1 - e_2\rangle)) \cup (HC \cap (G_2 + \langle e_1 - e_2\rangle)).\]
-Thus it is sufficient to show that for every \(x \in F_1\) and \(y \in G_2\) the function \(f_x(u) \coloneqq a(x + u(e_2 - e_1))\) and the funciton \(g_y(v) \coloneqq a(y + v(e_1 - e_2))\) are non negative for all \(u \in [0,x_2]\) and \(v \in [x_1, 1]\) respectively. Expanding the expression of \(f_x\) we obtain:
-\[
-f_x(u) = a( u, x_2 - u, x_3, x_4, \ldots, x_n) = - u^2 \prod_{i=3}^nx_i + u \prod_{i=2}^nx_n - sum_{i=2}^nx_i + n - 1
-\]
-The second derivate of \(f_x(u)\) respect to \(u\) is thus \(f''_x(u) = -2 \prod_{i = 3} x_i \leq 0\) and is thus concave respect to \(v\). The value of \(f_x\) on the boundary points \(u =0,x_1\) is:
-\begin{align}
-  f_x(0) = a(0, x_2, \ldots, x_n) = \sum_{i=2}^nx_i + n - 1  \geq 0 \\
-  f_x(x_2) = a(x_2, 0 , x_3, \ldots, x_n) = \prod_{i=2}^nx_i - \sum_{i=2}^nx_i + n - 2 \geq 0.
-\end{align}
-Where the second inequality is true by induction. Thus for every \(x \in F_1\) for every \(u \in [x_2,1]\) we have \(f_x \geq 0\).
-Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we have \(g_y \geq 0\). Thus for all \(x \in C\), \(a(x) \geq 0\) which concludes the proof. 
-\end{proof}
-
-The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{obs: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
+\end{definition}
+% \begin{proof}
+% \gr{This is actually much easier since by fixing all points except one we have an affine functions}
+% We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
+% Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
+% This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
+% This is trivially true for \(n = 1\). If \(n > 1 \), let \(HC \coloneqq [0,1]^n \) denote the hypercube, Let \(F_i \coloneqq \{x \in HC \mid x_i = 0\}\) and \(G_i \coloneqq \{x \in HC \mid x_i = 1\}\) denote the faces of the hypercube. We have that \[ HC = (HC \cap (F_1 + \langle e_1 - e_2\rangle)) \cup (HC \cap (G_2 + \langle e_1 - e_2\rangle)).\]
+% Thus it is sufficient to show that for every \(x \in F_1\) and \(y \in G_2\) the function \(f_x(u) \coloneqq a(x + u(e_2 - e_1))\) and the funciton \(g_y(v) \coloneqq a(y + v(e_1 - e_2))\) are non negative for all \(u \in [0,x_2]\) and \(v \in [x_1, 1]\) respectively. Expanding the expression of \(f_x\) we obtain:
+% \[
+% f_x(u) = a( u, x_2 - u, x_3, x_4, \ldots, x_n) = - u^2 \prod_{i=3}^nx_i + u \prod_{i=2}^nx_n - sum_{i=2}^nx_i + n - 1
+% \]
+% The second derivate of \(f_x(u)\) respect to \(u\) is thus \(f''_x(u) = -2 \prod_{i = 3} x_i \leq 0\) and is thus concave respect to \(v\). The value of \(f_x\) on the boundary points \(u =0,x_1\) is:
+% \begin{align}
+%   f_x(0) = a(0, x_2, \ldots, x_n) = \sum_{i=2}^nx_i + n - 1  \geq 0 \\
+%   f_x(x_2) = a(x_2, 0 , x_3, \ldots, x_n) = \prod_{i=2}^nx_i - \sum_{i=2}^nx_i + n - 2 \geq 0.
+% \end{align}
+% Where the second inequality is true by induction. Thus for every \(x \in F_1\) for every \(u \in [x_2,1]\) we have \(f_x \geq 0\).
+% Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we have \(g_y \geq 0\). Thus for all \(x \in C\), \(a(x) \geq 0\) which concludes the proof. 
+% \end{proof}
+The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{def: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
 Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is that we cannot restict the hypercuber \(C\) to its vertices becase other point could also be optimal for the OPF problem. Se we check the additional flower inequalities are still valid for \(Pr\).
 
 \begin{definition}[extendend flower inequalities.]
@@ -156,23 +160,67 @@ Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is 
   \begin{equation}\label{constr: extended flower inequality}
     z_I + \sum_{i=1}^k(1-z_{J_i}) \geq 1
   \end{equation}
-  
+  The extended flower relaxation \(FR \subset [0,1]^{\cE\cup\cS}\) are the elements \(x \in [0,1]^{\cE\cup\cS}\) for which all the extended flower inequalities hold.
 \end{definition}
 
 \begin{proposition}
-  For all \(x \in Pr\) and  \(I \in \cE\), \(J_1,\ldots,J_k \in \cE \cup \cS\) such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) for \(i = 1,2,\ldots,k\). Then \emph{extended flower inequality} \eqref{constr: extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) holds for \(x\).
+  For all \(x \in Pr\) and  \(I \in \cE\), \(J_1,\ldots,J_k \in \cE \cup \cS\) such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) for \(i = 1,2,\ldots,k\). Then \emph{extended flower inequality} \eqref{constr: extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) holds for \(x\). In particular \(Pr \subset FR\).
 \end{proposition}
 \begin{proof}
   For \(|I| = 1\) this is trivally true.
-  For \(|I| > 1\) we want to see that for any \(x \in C_{\cup_kJ_k} \coloneqq [0,1]^{\cup_{k=1}^KJ_K}\) we have \(a((x_j)_{j \in \cup J_k}) = \prod_{i \in I}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k}x_j) - 1 \geq 0\). Consider the face \(F = \{x \in [0,1]^{\cup_{k=1}^KJ_K} \mid x_1 = 0\}\). Then \(C_{\cup J_k} = C_{\cup J_k} \cap ( F + \langle e_1 \rangle)\).
-  Thus we only need to show that for every \(x \in F\) the function \(f_x(x_1)\) where we keep fixed all the variables except \(x_0\) is positive. If \(i: [0,1]^{\cup_{k=1}^KJ_k \setminus \{1\}} \to F\) then \(f_x(x_1) \coloneqq a(i(x) + x_1e_1)\). This is an affine function, thus it sufficient to show that it is positive at \(x_1 = 0\) and \(x_1 = 1\). For \(x_1 = 0\) this is trivially true. For \(x_1 = 1\), we have \(f_x(1) = \prod_{i \in I\setminus\{1\}}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k \setminus\{1\}}x_j) - 1 \geq 0\) by induction on \(|I|\).
+  For \(|I| = n > 1\), wlog \(I = \{1,\ldots,n\}\). We want to see that for any \(x \in C_{\cup_kJ_k} \coloneqq [0,1]^{\cup_{k=1}^KJ_K}\) we have \(a(x) = \prod_{i \in I}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k}x_j) - 1 \geq 0\). Consider the face \(F = \{x \in [0,1]^{\cup_{k=1}^KJ_K} \mid x_1 = 0\}\). Then \(C_{\cup J_k} = C_{\cup J_k} \cap ( F + \langle e_1 \rangle)\).
+  Thus we only need to show that for every \(x \in F\) the function \(f_x(x_1) \coloneqq a(x + x_1e_1)\) is positive. This is an affine function, thus it sufficient to show that it is positive at \(x_1 = 0\) and \(x_1 = 1\). For \(x_1 = 0\) this is trivially true. For \(x_1 = 1\), we have \(f_x(1) = \prod_{i \in I\setminus\{1\}}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k \setminus\{1\}}x_j) - 1 \geq 0\) by induction on \(|I|\).
 \end{proof}
+By taking \(J_i = \{x_i\}\) for all \(x_i \in I\), since \(z_{J_i} = x_i\), we have:
+\begin{corollary}
+  \gr[]{ok, to write better}
+  The \emph{standard form relaxation} as in defition \ref{def: standard form relaxation} is a relaxation of \(Pr\). That is \(Pr \subset PrR\).
+\end{corollary}
+
+\gr[inline]{Il resto del paper McCormick strikes back drovebbe valere anche qui, perchè parla della struttura dei rilassamenti, che non dipende da Pr.}
+
 \subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
-It must the noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given an monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
+In the beginning of the sections, we assumed that the variables \(x_i \in [0,1]\) because affine transformation of homogenous constraints remain homogenous.But it must be noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given a monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
 Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
 
+\begin{observation}
+  \gr[inline]{add observation that they cannot be all positive or all negative. Can we also say something more? maybe not}
+\end{observation}
+
+Let \(C = \{k_1,\ldots, k_n\} \subset \boB \) be a cycle.
+ The variables \(s_{h}\) are in the form \( s_{h} \in [-u_{s_h}, u_{s_h}]\) where \(h = (k_i,k_{i+1})\)  for all \(i = 1,\ldots,n\). We can then substitute \(s_{h}\) with \( u_h s'_h = s_h \) where
+ \(s'_h \in [-1,1]\). 
+We then define the sign variables \(\sigma_h \in \{0,1\}\) for each \(h \in C\), where \(\sigma_h = 0\) if \(s_h\) is negative and \(1\) if it is positive.
+We can now rewrite the loop constraint as:
+
+% Then for each \(M \subset branches(C)\) we define the problem \(\cC(M)\) obtaining from the OPF problem by restricting the domain of 
+% \(s'_h\) variables to \(s'_h \in [-1,0]\) if \(h \in M\) and \(s'_h \in [0,1]\) if \(h \in M^c\). We observe that since the monomials appearing in each possible subproblem \(\cC(M)\) are the same, the flower inequalities are the same. The only constraint which is written differently is the loop constraint. Let \(\sigma_h^M \in \{-1,1\}\) be the variable which is equal to \(-1\) if \(h \in M\) and equal to \(0\) if \(h \in M^c\). Then the loop constraint associated to \(\cC(M)\) is 
+\begin{equation}
+  \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (\prod_{h \in A} (2\sigma_h-1) u_h) z_A=z'_C
+\end{equation}
+Where we substitute the monomial \(\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}\) with \(z_A\) and the product 
+\(\prod_{k=1}^nc_{k_i,k_i}\) with \(z'_C\). For each even subset \(A \subset [n]\) we introduce the binary variable \(\lambda_A \in \{0,1\}\) which is \(0\) if \(\prod_{h \in A} (2\sigma_h-1)\) is \(-1\) and \(\lambda_A = 1\) otherwise.
+The loop constraint becomes:
+\begin{equation}
+  \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (2\lambda_A - 1)U_A z_A=z'_C
+\end{equation}
+The product \( \lambda_Az_A\) can easily be linearized. To enforce the relation  \(2\lambda_A - 1 = \prod_{h \in A}(2\delta_h -1)\), simply note that \(\lambda_A = 0\) if and only if there is an odd number of \(\delta_h\) equal to \(0\), that is, there exists \(m_A \in \integers \) such that:
+\begin{equation}
+  \lambda_A + 2m_{A} = \sum_{h \in A} \delta_h 
+\end{equation}
+\gr[]{In realtà questo non è specifico all'OPF, va bene per tutti i vincoli omogenei e si può fare al posto di fare le trasformazioni affini! }
+
+% The parameters \(\lambda_A^M\) fully capture the differences between the loop constraints in the various \(\cC(M)\).
+% We consider these subproblems as a unique MILP problem the following way:
+% We introduce a binary variable \(delta_h \in \{0,1\}\) for each \(h \in branches(C)\) which correspond to the sign of \(s_h\) for all \(h \in branches(C)\).
 
 
+% Now, we can either solve all the subproblems in parallel and take the minimum or consider an associated MILP formulation by:
+% \begin{enumerate}
+%   \item Add one binary variable of each addend, that is more or less\( 2^C/2\)  + some binding constraints for the signs (which might be the same as the extended flower constraints) constraints: \gr[inline]{Question: given the loop constraint, if I randomly choose the signs of the monomials is it always one of the subproblems or is there one for which this isn't the case? Probably the latter since the number os subproblems is \(2^n\) while the number of possible signs is the number of addents in the sum which is much larger.}
+%   Now let's consider \(\lambda_A^M\) as binary variables. We want to linearize the product \(\lambda_A^M z_A\), we "can assume" \(\lambda_A^M\) to be binary. We can then linearize the product \(\lambda_A^M z_A\).
+%   \item Add one binary for each possible A (that is \(2^C\) variables) + \(2*2^C\) constraints
+% \end{enumerate}
 
 
 
