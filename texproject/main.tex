@@ -16,7 +16,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{observation}[theorem]{Observation}
 \newtheorem{problem}{Problem}
 
@@ -40,7 +40,7 @@
 \nc{\cI}{\mathcal{I}}
 \nc{\cP}{\mathcal{P}}
 \nc{\cE}{\mathcal{E}}
-
+\nc{\cS}{\mathcal{S}}
 \begin{document}
 
 
@@ -77,14 +77,14 @@ We consider the following convex Jabr relaxation of the OPF problem:
 \end{align}
 
 This relaxation is in general not exact. We can recover exactness thanks to the following result:
-\begin{prop}
+\begin{proposition}
   Model \eqref{Jabr equality model} with the additional \emph{loop constraint} \eqref{loop constraint} for every loop in a cycle basis of \((\boB,\boL)\) is exact, we refer to this new model as the \emph{Exact Jabr formulation}
 
   \begin{equation}
     \label{loop constraint}
     \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}=\prod_{k=1}^nc_{k_i,k_i}.
   \end{equation}
-  \end{prop}
+  \end{proposition}
 
 In \textcolor{red}{cite}, auxiliary branches were added to the network, dividing each loop in smaller loops, to decrease the degree of the polynomials defining the loop constraint. Then Mc Cormick linearization was applied.
 The problem with this approach is that one exiliary branch is added for every branch in the loop.
@@ -130,6 +130,7 @@ If such constraints were the only ones, and if the cost was also multilinear, we
   \end{align}
 \end{observation}
 \begin{proof}
+\gr{This is actually much easier since by fixing all points except one we have an affine functions}
 We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
 Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
 This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
@@ -150,6 +151,22 @@ Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we hav
 The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{obs: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
 Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is that we cannot restict the hypercuber \(C\) to its vertices becase other point could also be optimal for the OPF problem. Se we check the additional flower inequalities are still valid for \(Pr\).
 
+\begin{definition}[extendend flower inequalities.]
+  Let \(I \in \cE\) and let \(J_1,\ldots,J_k \in \cE \cup \cS\) be such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) holds for \(i = 1,2,\ldots,k\). The \emph{extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) is defined as
+  \begin{equation}\label{constr: extended flower inequality}
+    z_I + \sum_{i=1}^k(1-z_{J_i}) \geq 1
+  \end{equation}
+  
+\end{definition}
+
+\begin{proposition}
+  For all \(x \in Pr\) and  \(I \in \cE\), \(J_1,\ldots,J_k \in \cE \cup \cS\) such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) for \(i = 1,2,\ldots,k\). Then \emph{extended flower inequality} \eqref{constr: extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) holds for \(x\).
+\end{proposition}
+\begin{proof}
+  For \(|I| = 1\) this is trivally true.
+  For \(|I| > 1\) we want to see that for any \(x \in C_{\cup_kJ_k} \coloneqq [0,1]^{\cup_{k=1}^KJ_K}\) we have \(a((x_j)_{j \in \cup J_k}) = \prod_{i \in I}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k}x_j) - 1 \geq 0\). Consider the face \(F = \{x \in [0,1]^{\cup_{k=1}^KJ_K} \mid x_1 = 0\}\). Then \(C_{\cup J_k} = C_{\cup J_k} \cap ( F + \langle e_1 \rangle)\).
+  Thus we only need to show that for every \(x \in F\) the function \(f_x(x_1)\) where we keep fixed all the variables except \(x_0\) is positive. If \(i: [0,1]^{\cup_{k=1}^KJ_k \setminus \{1\}} \to F\) then \(f_x(x_1) \coloneqq a(i(x) + x_1e_1)\). This is an affine function, thus it sufficient to show that it is positive at \(x_1 = 0\) and \(x_1 = 1\). For \(x_1 = 0\) this is trivially true. For \(x_1 = 1\), we have \(f_x(1) = \prod_{i \in I\setminus\{1\}}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k \setminus\{1\}}x_j) - 1 \geq 0\) by induction on \(|I|\).
+\end{proof}
 \subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
 It must the noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given an monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
 Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
@@ -227,11 +244,11 @@ and
   d_3^2 &= c_{12}c_{33} + c_{23}c_{31} + s_{23}s_{31} \label{constr: loop decomposition 2}
 \end{align}
 Then, we have the following results which let's us to rewrite the constraints associated to a cycle of length three as two polynomial constraints of degree 2.
-\begin{prop}
+\begin{proposition}
   \begin{equation}
     \{(c,s)\mid p_3 = p_{12} = p_{23} = p_{31} = 0\} = \{(c,s)\mid q_3^1 = q_3^2 = p_{12} = p_{23} = p_{31} = 0\} 
   \end{equation}
-\end{prop}
+\end{proposition}
 
 If we don't restrict the possible direction \(\st=(d_c,d_s,d_P)\), imposing that constraints \eqref{constr: loop decomposition 1}, \eqref{constr: loop decomposition 2} hold for \(x + \st\) would impose polynomial constraints on \(\st\).
 Alternatively, since  for example \(q_3^1\) is a bilinear polynomial respect to the vectors \(v_1=(s_{12}, c_{23}, s_{23})\) and \(v_2=(c_{33}, s_{31}, c_{31})\), we can fix the variables in \(v_2\), that is \(dv_2 = 0\) and move along \(v_1\).
