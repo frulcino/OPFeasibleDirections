@@ -136,7 +136,7 @@ def StdFormRelx(z, x, indices):
     
 for A in As:
     m.addLConstr(lambda_A[A] + 2*m_A[A] == sum(u[h] for h in A))
-    monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[[k[1]]]) for k in loop if k not in A]
+    monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[k[1]]) for k in loop if k not in A]
     StdFormRelx(z_A[A], monomials , np.arange(len(monomials)))
     
 
@@ -150,9 +150,6 @@ x = v
 for index in loop_v:
     m.addConstr(z[0] <= x[index] / (V_max[index]**2))
 m.addConstr(z[0] + sum(1 - x[index] / (V_max[index]**2) for index in loop_v) >= 1)
-
-
-    
 
 
 #m.addLConstr(v[1] == 1)
