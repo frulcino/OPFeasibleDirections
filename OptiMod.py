@@ -58,7 +58,7 @@ def create_admittance_matrix(case, branch):
         
     return G,B
 
-case = datasets.load_opf_example("case14")
+case = datasets.load_opf_example("case9")
 # result = opf.solve_opf(case, opftype="AC")
 
 # dictionary generator: bus since one bus can have more than one generator
@@ -84,14 +84,14 @@ Qd = {i: case["bus"][bus_to_index[i]]['Qd'] for i in buses}
 # Writing the model
 m = gp.Model()
 
-# variables
+#%% Jabr variables
 Pg = m.addVars(generators.keys(), lb=Pg_min.values(), ub=Pg_max.values(),
                vtype=GRB.CONTINUOUS, name=["Pg_{}".format(i) for i in generators])
 Qg = m.addVars(generators.keys(), lb=Qg_min.values(), ub=Qg_max.values(),
                vtype=GRB.CONTINUOUS, name=["Qg_{}".format(i) for i in generators])
 v = m.addVars(buses, lb=[V_min[i]**2 for i in buses], ub=[V_max[i]**2 for i in buses],
               vtype=GRB.CONTINUOUS, name=["v_{}".format(i) for i in buses])
-c = m.addVars(branches, lb=[-V_max[i]*V_max[j] for (i, j) in branches], ub=[V_max[i]*V_max[j] for (i, j) in branches],
+c = m.addVars(branches, lb=0, ub=[V_max[i]*V_max[j] for (i, j) in branches],
               vtype=GRB.CONTINUOUS, name=["c_{}{}".format(i, j) for (i, j) in branches])
 s = m.addVars(branches, lb=[-V_max[i]*V_max[j] for (i, j) in branches], ub=[V_max[i]*V_max[j] for (i, j) in branches],
               vtype=GRB.CONTINUOUS, name=["s_{}{}".format(i, j) for (i, j) in branches])
@@ -99,10 +99,61 @@ P = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
               vtype=GRB.CONTINUOUS, name=["P_{}{}".format(i, j) for (i, j) in double_branches])
 Q = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
               vtype=GRB.CONTINUOUS, name=["Q_{}{}".format(i, j) for (i, j) in double_branches])
+#%% Loop constraint linearization variables
 
-# constraints
+s_abs = m.addVars(branches, lb = 0, ub = 1,
+                  vtype=GRB.CONTINUOUS, name=["s_abs_{}{}".format(i,j) for (i,j) in branches])
+u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
+
+
+# Loop constraints and extended flower inequalities
+G = nx.Graph()  # building the support graph of the network
+for (i, j) in branches:
+    G.add_edge(i, j)
+loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
+loop_v = loops[0]
+loop = [(loop_v[i-1], loop_v[i]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  in branches] + [(loop_v[i], loop_v[i-1]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  not in branches]
+# assummiamo ci sia un solo ciclo eheh
+z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = ["z_cycle_{}".format(i) for i in np.arange(len(loops))])
+#for loop in loops:
+As = [A for A in chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))]
+
+z_A = m.addVars(As, lb=0, ub=1, vtype = GRB.CONTINUOUS, name = ["z_{}".format(A) for A in As])
+lambda_A = m.addVars(As, vtype=GRB.BINARY, name = ["lambda_{}".format(A) for A in As])
+m_A = m.addVars(As, vtype=GRB.INTEGER, lb = 0, ub = [len(A) // 2 for A in As], name = ["m_{}".format(A) for A in As])
+#r_A = m.addVars(As, vtype=GRB.BINARY, name = ["r_{}".format(A) for A in As])
+
+#%% constraints
 for (i, j) in branches:
     m.addConstr(c[(i, j)] ** 2 + s[(i, j)] ** 2 <= v[i] * v[j])  # (2)
+    m.addConstr(s[(i, j)] == V_max[i] * V_max[j] * (2 * u[(i,j)] - 1) * s_abs[(i,j)]) # 
+
+def StdFormRelx(z, x, indices):
+    for index in indices:
+        m.addConstr(z <= x[index])
+    m.addConstr(z + sum(1 - x[index] for index in indices) >= 1)
+    
+    
+for A in As:
+    m.addLConstr(lambda_A[A] + 2*m_A[A] == sum(u[h] for h in A))
+    monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[[k[1]]]) for k in loop if k not in A]
+    StdFormRelx(z_A[A], monomials , np.arange(len(monomials)))
+    
+
+#U_C = np.prod(V_max[i]**2 for i in loop_v)
+m.addConstr(sum((-1)**(len(A) // 2) * (1 - 2*lambda_A[A]) * z_A[A] for A in As) == z_C[0])
+     
+
+
+z = z_C
+x = v
+for index in loop_v:
+    m.addConstr(z[0] <= x[index] / (V_max[index]**2))
+m.addConstr(z[0] + sum(1 - x[index] / (V_max[index]**2) for index in loop_v) >= 1)
+
+
+    
+
 
 #m.addLConstr(v[1] == 1)
 baseMVA = case["baseMVA"]
@@ -167,15 +218,9 @@ B[(fbus,tbus)] = Y12.imag
 B[(tbus,fbus)] = Y21.imag
 B[(tbus,tbus)] = Y22.imag
 
+
+
 #eheh infeasible eheh
 
-# Loop constraints and extended flower inequalities
-#G = nx.Graph()  # building the support graph of the network
-#for (i, j) in branches:
-#    G.add_edge(i, j)
-#loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
-#
-#for loop in loops:
-#    As = chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))
 
 
