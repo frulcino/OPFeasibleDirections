@@ -105,9 +105,9 @@ Q = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
               vtype=GRB.CONTINUOUS, name=["Q_{}{}".format(i, j) for (i, j) in double_branches])
 #%% Loop constraint linearization variables
 
-s_abs = m.addVars(branches, lb = 0, ub = 1,
-                  vtype=GRB.CONTINUOUS, name=["s_abs_{}{}".format(i,j) for (i,j) in branches])
-u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
+# s_abs = m.addVars(branches, lb = 0, ub = 1,
+#                   vtype=GRB.CONTINUOUS, name=["s_abs_{}{}".format(i,j) for (i,j) in branches])
+# u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
 
 
 # Loop constraints and extended flower inequalities
@@ -116,48 +116,44 @@ for (i, j) in branches:
     G.add_edge(i, j)
 loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
 loop_v = loops[0]
-loops_b = [[(loop_v[i-1], loop_v[i]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  in branches] + [(loop_v[i], loop_v[i-1]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  not in branches] for loop_v in loops]
+loop = [(loop_v[i-1], loop_v[i]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  in branches] + [(loop_v[i], loop_v[i-1]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  not in branches]
 # assummiamo ci sia un solo ciclo eheh
-z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = ["z_cycle_{}".format(i) for i in np.arange(len(loops))])
-#for loop in loops:
-As_list = [[A for A in chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))] for loop in loops_b]
-#Aset = set(sum([A for A in As] for As in As_list))
-#Aset = list(Aset)
-z_A_index = [(i,A) for A in As_list[i] for i in range(len(As_list))]
-z_A = m.addVars(z_A_index, lb=0, ub=1, vtype = GRB.CONTINUOUS, name = ["z_{}".format(A) for A in z_A_index])
-lambda_A = m.addVars(z_A_index, vtype=GRB.BINARY, name = ["lambda_{}".format(A) for A in z_A_index])
-m_A = m.addVars(z_A_index, vtype=GRB.INTEGER, lb = 0, ub = [len(A[1]) // 2 for A in z_A_index], name = ["m_{}".format(A) for A in z_A_index])
-#r_A = m.addVars(As, vtype=GRB.BINARY, name = ["r_{}".format(A) for A in As])
+# z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = ["z_cycle_{}".format(i) for i in np.arange(len(loops))])
+# #for loop in loops:
+As = [A for A in chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))]
+
+# z_A = m.addVars(As, lb=0, ub=1, vtype = GRB.CONTINUOUS, name = ["z_{}".format(A) for A in As])
+# lambda_A = m.addVars(As, vtype=GRB.BINARY, name = ["lambda_{}".format(A) for A in As])
+# m_A = m.addVars(As, vtype=GRB.INTEGER, lb = 0, ub = [len(A) // 2 for A in As], name = ["m_{}".format(A) for A in As])
+# #r_A = m.addVars(As, vtype=GRB.BINARY, name = ["r_{}".format(A) for A in As])
 
 #%% constraints
 for (i, j) in branches:
     m.addConstr(c[(i, j)] ** 2 + s[(i, j)] ** 2 <= v[i] * v[j])  # (2)
-    m.addConstr(s[(i, j)] == V_max[i] * V_max[j] * (2 * u[(i,j)] - 1) * s_abs[(i,j)]) # 
+    #m.addConstr(s[(i, j)] == V_max[i] * V_max[j] * (2 * u[(i,j)] - 1) * s_abs[(i,j)]) # 
 
 def StdFormRelx(z, x, indices):
     for index in indices:
         m.addConstr(z <= x[index])
     m.addConstr(z + sum(1 - x[index] for index in indices) >= 1)
-
-for i,A in z_A_index:
-        m.addLConstr(lambda_A[(i,A)] + 2*m_A[(i,A)] == sum(u[h] for h in A))
-        monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[k[1]]) for k in loops_b[i] if k not in A]
-        StdFormRelx(z_A[(i,A)], monomials , np.arange(len(monomials)))
+    
+    
+# for A in As:
+#     m.addLConstr(lambda_A[A] + 2*m_A[A] == sum(u[h] for h in A))
+#     monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[k[1]]) for k in loop if k not in A]
+#     StdFormRelx(z_A[A], monomials , np.arange(len(monomials)))
     
 
 #U_C = np.prod(V_max[i]**2 for i in loop_v)
-#loop constraint
-for i, As in enumerate(As_list):
-    m.addConstr(sum((-1)**(len(A) // 2) * (1 - 2*lambda_A[(i,A)]) * z_A[(i,A)] for A in As) == z_C[i])
+#m.addConstr(sum((-1)**(len(A) // 2) * (1 - 2*lambda_A[A]) * z_A[A] for A in As) == z_C[0])
+     
 
 
-
-for i, loop in enumerate(loops):
-    z = z_C[i]
-    x = v
-    for index in loop:
-        m.addConstr(z <= x[index] / (V_max[index]**2))
-    m.addConstr(z+ sum(1 - x[index] / (V_max[index]**2) for index in loop) >= 1)
+#z = z_C
+# x = v
+# for index in loop_v:
+#     m.addConstr(z[0] <= x[index] / (V_max[index]**2))
+# m.addConstr(z[0] + sum(1 - x[index] / (V_max[index]**2) for index in loop_v) >= 1)
 
 
 #m.addLConstr(v[1] == 1)
@@ -201,4 +197,4 @@ m.optimize()
 lhs = sum((-1)**(len(A) // 2) * np.prod([s[branch].X for branch in A]) * np.prod([c[branch].X for branch in loop if branch not in A]) for A in As)
 rhs = np.prod([v[bus].X for bus in loop_v])
 
-print(abs(lhs - rhs))
+print(abs(lhs - rhs) )
