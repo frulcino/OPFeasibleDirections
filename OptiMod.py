@@ -58,9 +58,9 @@ def create_admittance_matrix(case, branch):
         
     return G,B
 
-case = datasets.load_opf_example("case9")
+case = datasets.load_opf_example("case14")
 #%% true result
-result = opf.solve_opf(case, opftype="AC")
+# result = opf.solve_opf(case, opftype="AC")
 
 
 
@@ -114,8 +114,23 @@ u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) i
 G = nx.Graph()  # building the support graph of the network
 for (i, j) in branches:
     G.add_edge(i, j)
-loops = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
-loop_v = loops[0]
+loops_unord = nx.minimum_cycle_basis(G)  # evaluate minimum (in terms of length if unweighted graph) cycle basis of network
+loops_ordered = []
+for loop_unord in loops_unord:
+    loop_ord = [loop_unord[0]]
+    loop_unord.remove(loop_unord[0])
+    cont = 0
+    while cont < len(loop_unord):
+        if (loop_ord[-1], loop_unord[cont]) in double_branches:
+            loop_ord.append(loop_unord[cont])
+            loop_unord.remove(loop_unord[cont])
+            cont = 0
+        else:
+            cont += 1
+    loops_ordered.append(loop_ord)
+loops = loops_ordered
+
+# loop_v = loops[0]
 loops_b = [[(loop_v[i-1], loop_v[i]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  in branches] + [(loop_v[i], loop_v[i-1]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  not in branches] for loop_v in loops]
 # assummiamo ci sia un solo ciclo eheh
 z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = ["z_cycle_{}".format(i) for i in np.arange(len(loops))])
@@ -123,7 +138,7 @@ z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = 
 As_list = [[A for A in chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))] for loop in loops_b]
 #Aset = set(sum([A for A in As] for As in As_list))
 #Aset = list(Aset)
-z_A_index = [(i,A) for A in As_list[i] for i in range(len(As_list))]
+z_A_index = [(ii, this_A) for ii in range(len(As_list)) for this_A in As_list[ii]]
 z_A = m.addVars(z_A_index, lb=0, ub=1, vtype = GRB.CONTINUOUS, name = ["z_{}".format(A) for A in z_A_index])
 lambda_A = m.addVars(z_A_index, vtype=GRB.BINARY, name = ["lambda_{}".format(A) for A in z_A_index])
 m_A = m.addVars(z_A_index, vtype=GRB.INTEGER, lb = 0, ub = [len(A[1]) // 2 for A in z_A_index], name = ["m_{}".format(A) for A in z_A_index])
@@ -141,6 +156,7 @@ def StdFormRelx(z, x, indices):
 
 for i,A in z_A_index:
         m.addLConstr(lambda_A[(i,A)] + 2*m_A[(i,A)] == sum(u[h] for h in A))
+        print(i, A, loops_b[i])
         monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[k[1]]) for k in loops_b[i] if k not in A]
         StdFormRelx(z_A[(i,A)], monomials , np.arange(len(monomials)))
     
@@ -197,8 +213,12 @@ m.optimize()
 
 
 #eheh infeasible eheh
+lhs = []
+rhs = []
+for i in range(len(loops)):
+    lhs.append(sum([(-1)**(len(A) // 2) * np.prod([s[branch].X for branch in A]) * np.prod([c[branch].X for branch in loops_b[i] if branch not in A]) for A in As_list[i]]))
+    rhs.append(np.prod([v[bus].X for bus in loops[i]]))
+    
 
-lhs = sum((-1)**(len(A) // 2) * np.prod([s[branch].X for branch in A]) * np.prod([c[branch].X for branch in loop if branch not in A]) for A in As)
-rhs = np.prod([v[bus].X for bus in loop_v])
-
-print(abs(lhs - rhs))
+diff = np.array([abs(lhs[i] - rhs[i]) for i in range(len(loops))])
+print(np.linalg.norm(diff))
