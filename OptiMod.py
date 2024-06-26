@@ -129,7 +129,7 @@ for loop_unord in loops_unord:
             cont += 1
     loops_ordered.append(loop_ord)
 loops = loops_ordered
-
+nx.draw(G, with_labels = True)
 # loop_v = loops[0]
 loops_b = [[(loop_v[i-1], loop_v[i]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  in branches] + [(loop_v[i], loop_v[i-1]) for i in np.arange(len(loop_v)) if (loop_v[i-1], loop_v[i])  not in branches] for loop_v in loops]
 # assummiamo ci sia un solo ciclo eheh
@@ -221,4 +221,6 @@ for i in range(len(loops)):
     
 
 diff = np.array([abs(lhs[i] - rhs[i]) for i in range(len(loops))])
-print(np.linalg.norm(diff))
+print(np.linalg.norm(diff), max(diff), sum(diff)/len(diff))
+for (k,l) in branches:
+    print(abs(s[(k,l)].X**2 + c[(k,l)].X**2 - v[k].X*v[l].X))

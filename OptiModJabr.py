@@ -221,4 +221,6 @@ for i in range(len(loops)):
     
 
 diff = np.array([abs(lhs[i] - rhs[i]) for i in range(len(loops))])
-print(np.linalg.norm(diff))
+print(np.linalg.norm(diff), max(diff), sum(diff)/len(diff))
+for (k,l) in branches:
+    print(abs(s[(k,l)].X**2 + c[(k,l)].X**2 - v[k].X*v[l].X))
