@@ -14,7 +14,7 @@ import networkx as nx
 from itertools import chain, combinations
 
 #TODO che radiants stuff
-# c'è da fiss
+#TODO shunt admittance?
 
 def create_admittance_matrix(case, branch):
     """
@@ -104,7 +104,6 @@ P = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
 Q = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
               vtype=GRB.CONTINUOUS, name=["Q_{}{}".format(i, j) for (i, j) in double_branches])
 #%% Loop constraint linearization variables
-
 s_abs = m.addVars(branches, lb = 0, ub = 1,
                   vtype=GRB.CONTINUOUS, name=["s_abs_{}{}".format(i,j) for (i,j) in branches])
 u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
