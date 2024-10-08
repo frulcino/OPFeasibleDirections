@@ -88,14 +88,14 @@ class network:
                     vtype=GRB.CONTINUOUS, name=["Qg_{}".format(i) for i in generators])
         v = m.addVars(buses, lb=[V_min[i]**2 for i in buses], ub=[V_max[i]**2 for i in buses],
                     vtype=GRB.CONTINUOUS, name=["v_{}".format(i) for i in buses])
-        c = m.addVars(branches, lb=0, ub=[V_max[i]*V_max[j] for (i, j) in branches],
-                    vtype=GRB.CONTINUOUS, name=["c_{}{}".format(i, j) for (i, j) in branches])
-        s = m.addVars(branches, lb=[-V_max[i]*V_max[j] for (i, j) in branches], ub=[V_max[i]*V_max[j] for (i, j) in branches],
-                    vtype=GRB.CONTINUOUS, name=["s_{}{}".format(i, j) for (i, j) in branches])
-        P = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
-                    vtype=GRB.CONTINUOUS, name=["P_{}{}".format(i, j) for (i, j) in double_branches])
-        Q = m.addVars(double_branches, lb=-GRB.INFINITY, ub=GRB.INFINITY,
-                    vtype=GRB.CONTINUOUS, name=["Q_{}{}".format(i, j) for (i, j) in double_branches])
+        c = m.addVars([i for i in range(len(branches))], lb=0, ub=[V_max[i]*V_max[j] for (i, j) in branches],
+                    vtype=GRB.CONTINUOUS, name=["c_{}{}{}".format(i, j, k) for k, (i, j) in enumerate(branches)])
+        s = m.addVars([i for i in range(len(branches))], lb=[-V_max[i]*V_max[j] for (i, j) in branches], ub=[V_max[i]*V_max[j] for (i, j) in branches],
+                    vtype=GRB.CONTINUOUS, name=["s_{}{}{}".format(i, j, k) for k, (i, j) in enumerate(branches)])
+        P = m.addVars([i for i in range(len(double_branches))], lb=-GRB.INFINITY, ub=GRB.INFINITY,
+                    vtype=GRB.CONTINUOUS, name=["P_{}{}{}".format(i, j, k) for k, (i, j) in enumerate(double_branches)])
+        Q = m.addVars([i for i in range(len(double_branches))], lb=-GRB.INFINITY, ub=GRB.INFINITY,
+                    vtype=GRB.CONTINUOUS, name=["Q_{}{}{}".format(i, j, k) for k, (i, j) in enumerate(double_branches)])
 
         self.Pg = Pg
         self.Qg = Qg
@@ -130,9 +130,9 @@ class network:
         V_min = self.V_min
         V_max = self.V_max
  
-        s_abs = m.addVars(branches, lb = 0, ub = 1,
+        s_abs = m.addVars([i for i in range(len(branches))], lb = 0, ub = 1,
                         vtype=GRB.CONTINUOUS, name=["s_abs_{}{}".format(i,j) for (i,j) in branches])
-        u = m.addVars(branches, vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
+        u = m.addVars([i for i in range(len(branches))], vtype=GRB.BINARY, name=["u_{}{}".format(i,j) for (i,j) in branches])
         z_C = m.addVars(np.arange(len(loops)), lb=0, ub=1, vtype=GRB.CONTINUOUS, name = ["z_cycle_{}".format(i) for i in np.arange(len(loops))])
         #for loop in loops:
         As_list = [[A for A in chain.from_iterable(combinations(loop, r) for r in range(0, len(loop)+1, 2))] for loop in loops_b]
@@ -141,20 +141,23 @@ class network:
         lambda_A = m.addVars(z_A_index, vtype=GRB.BINARY, name = ["lambda_{}".format(A) for A in z_A_index])
         m_A = m.addVars(z_A_index, vtype=GRB.INTEGER, lb = 0, ub = [len(A[1]) // 2 for A in z_A_index], name = ["m_{}".format(A) for A in z_A_index])  
         # constraints
-        for (i, j) in branches:
-            m.addConstr(c[(i, j)] ** 2 + s[(i, j)] ** 2 <= v[i] * v[j])  # (2)
-            m.addConstr(s[(i, j)] == V_max[i] * V_max[j] * (2 * u[(i,j)] - 1) * s_abs[(i,j)]) # 
+        for k, (i, j) in enumerate(branches):
+            m.addConstr(c[k] ** 2 + s[k] ** 2 <= v[i] * v[j])  # (2)
+            m.addConstr(s[k] == V_max[i] * V_max[j] * (2 * u[k] - 1) * s_abs[k]) # 
 
         def StdFormRelx(z, x, indices):
             for index in indices:
                 m.addConstr(z <= x[index])
             m.addConstr(z + sum(1 - x[index] for index in indices) >= 1)
-
+        '''
         for i,A in z_A_index:
+                # TODO qui non so come chiamare s_abs perché non so che archi vengono pescati quando si fa il loop
                 m.addLConstr(lambda_A[(i,A)] + 2*m_A[(i,A)] == sum(u[h] for h in A))
                 print(i, A, loops_b[i])
                 monomials = [s_abs[h] for h in A] + [c[k] / (V_max[k[0]] * V_max[k[1]]) for k in loops_b[i] if k not in A]
                 StdFormRelx(z_A[(i,A)], monomials , np.arange(len(monomials)))
+                '''
+                
             
 
         #U_C = np.prod(V_max[i]**2 for i in loop_v)
@@ -174,21 +177,27 @@ class network:
 
         #m.addLConstr(v[1] == 1)
         baseMVA = case["baseMVA"]
-        for branch in case["branch"]:
+        for k, branch in enumerate(case['branch']):
             i = branch["fbus"]
             j = branch["tbus"]
             G, B = network.create_admittance_matrix(branch)
-            print("MIAO")
-            m.addLConstr(P[(i, j)] / (baseMVA) == G[(i, i)] * v[i] + G[(i, j)] * c[(i, j)] + B[(i, j)] * s[(i, j)])   # (3)
-            m.addLConstr(Q[(i, j)] / (baseMVA) == -B[(i, i)] * v[i] - B[(i, j)] * c[(i, j)] + G[(i, j)] * s[(i, j)])  # (4)
-            m.addLConstr(P[(j, i)] / (baseMVA) == G[(j, j)] * v[j] + G[(j, i)] * c[(i, j)] - B[(j, i)] * s[(i, j)])   # (3)
-            m.addLConstr(Q[(j, i)] / (baseMVA) == -B[(j, j)] * v[j] - B[(j, i)] * c[(i, j)] - G[(j, i)] * s[(i, j)])  # (4)
+            # print("MIAO")
+            m.addLConstr(P[k] / (baseMVA) == G[(i, i)] * v[i] + G[(i, j)] * c[k] + B[(i, j)] * s[k])   # (3)
+            m.addLConstr(Q[k] / (baseMVA) == -B[(i, i)] * v[i] - B[(i, j)] * c[k] + G[(i, j)] * s[k])  # (4)
+            m.addLConstr(P[k + len(branches)] / (baseMVA) == G[(j, j)] * v[j] + G[(j, i)] * c[k] - B[(j, i)] * s[k])   # (3)
+            m.addLConstr(Q[k + len(branches)] / (baseMVA) == -B[(j, j)] * v[j] - B[(j, i)] * c[k] - G[(j, i)] * s[k])  # (4)
 
         for i in buses:
             gen_at_bus = [g for g in generators.keys() if generators[g] == i]
             linked_buses = [j for j in buses if (i, j) in double_branches]
-            m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[(i, j)] for j in linked_buses))  # (5) + (6) real
-            m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[(i, j)] for j in linked_buses))  # (5) + (6) imaginary
+            # m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[(i, j)] for j in linked_buses))  # (5) + (6) real
+            # m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[(i, j)] for j in linked_buses))  # (5) + (6) imaginary
+            possible_ks = []
+            for k in range(len(double_branches)):
+                if double_branches[k][0] == i and double_branches[k][1] in linked_buses:
+                    possible_ks.append(k)
+            m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[k] for k in possible_ks))  # (5) + (6) real
+            m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[k] for k in possible_ks))  # (5) + (6) imaginary
 
         # TODO objective function
         totalcost = 0
@@ -235,27 +244,33 @@ class network:
         V_min = self.V_min
         V_max = self.V_max
 
-        for (i, j) in branches:
-            m.addConstr(c[(i, j)] ** 2 + s[(i, j)] ** 2 <= v[i] * v[j])  # (2)
+        for k, (i, j) in enumerate(branches):
+            m.addConstr(c[k] ** 2 + s[k] ** 2 <= v[i] * v[j])  # (2)
             # m.addConstr(s[(i, j)] == V_max[i] * V_max[j] * (2 * u[(i,j)] - 1) * s_abs[(i,j)]) # 
 
         #m.addLConstr(v[1] == 1)
         baseMVA = case["baseMVA"]
-        for branch in case["branch"]:
+        for k, branch in enumerate(case['branch']):
             i = branch["fbus"]
             j = branch["tbus"]
             G, B = network.create_admittance_matrix(branch)
-            print("MIAO")
-            m.addLConstr(P[(i, j)] / (baseMVA) == G[(i, i)] * v[i] + G[(i, j)] * c[(i, j)] + B[(i, j)] * s[(i, j)])   # (3)
-            m.addLConstr(Q[(i, j)] / (baseMVA) == -B[(i, i)] * v[i] - B[(i, j)] * c[(i, j)] + G[(i, j)] * s[(i, j)])  # (4)
-            m.addLConstr(P[(j, i)] / (baseMVA) == G[(j, j)] * v[j] + G[(j, i)] * c[(i, j)] - B[(j, i)] * s[(i, j)])   # (3)
-            m.addLConstr(Q[(j, i)] / (baseMVA) == -B[(j, j)] * v[j] - B[(j, i)] * c[(i, j)] - G[(j, i)] * s[(i, j)])  # (4)
+            # print("MIAO")
+            m.addLConstr(P[k] / (baseMVA) == G[(i, i)] * v[i] + G[(i, j)] * c[k] + B[(i, j)] * s[k])   # (3)
+            m.addLConstr(Q[k] / (baseMVA) == -B[(i, i)] * v[i] - B[(i, j)] * c[k] + G[(i, j)] * s[k])  # (4)
+            m.addLConstr(P[k + len(branches)] / (baseMVA) == G[(j, j)] * v[j] + G[(j, i)] * c[k] - B[(j, i)] * s[k])   # (3)
+            m.addLConstr(Q[k + len(branches)] / (baseMVA) == -B[(j, j)] * v[j] - B[(j, i)] * c[k] - G[(j, i)] * s[k])  # (4)
 
         for i in buses:
             gen_at_bus = [g for g in generators.keys() if generators[g] == i]
             linked_buses = [j for j in buses if (i, j) in double_branches]
-            m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[(i, j)] for j in linked_buses))  # (5) + (6) real
-            m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[(i, j)] for j in linked_buses))  # (5) + (6) imaginary
+            # m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[(i, j)] for j in linked_buses))  # (5) + (6) real
+            # m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[(i, j)] for j in linked_buses))  # (5) + (6) imaginary
+            possible_ks = []
+            for k in range(len(double_branches)):
+                if double_branches[k][0] == i and double_branches[k][1] in linked_buses:
+                    possible_ks.append(k)
+            m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[k] for k in possible_ks))  # (5) + (6) real
+            m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[k] for k in possible_ks))  # (5) + (6) imaginary
 
         # TODO objective function
         totalcost = 0
@@ -323,5 +338,5 @@ n.init_jabr_model()
 n.m.optimize()
 
 #%%
-n.init_bouquet_model()
-n.m.optimize()
+# n.init_bouquet_model()
+# n.m.optimize()
