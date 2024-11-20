@@ -355,5 +355,52 @@ Leaven like this one obvious solution is \(dx = 0\). Possible ideas.
 Since the constraints are affine, problem \eqref{prob: Step Problem} can be solved with a projected gradient descent algorithm.
 \gr[]{If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}
 
+\newpage
+\section{Other cuts}
+\(x_v\) variables, \(v \in I\), \(x_v \in [l_v, u_v] \subset [-1, 1]\). \(I = J \oplus K\) such that
+\begin{align}
+	& l_v > 0, \; u_v = 1, &\forall v \in J \\
+	& l_v = - u_v, \; u_v < 1,& \forall v \in K
+\end{align}
+If we define \(z_I \coloneqq \prod_{v \in I} x_v\), it holds
+\begin{align}
+	& z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v, \label{eq:ineq-lb}\\
+	& z_I \leq x_v \prod_{v' \neq v} u_{v'} & \forall v \in J, \\
+	& z_I \leq |x_v| \prod_{v' \neq v} u_{v'} & \forall v \in K,
+\end{align}
+fix \(v \in I\) and define \(I' \coloneqq I \setminus \{v\}\)
+\begin{align}
+	& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \text{if } v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
+	& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \text{if } v \in K, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
+	& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \text{if } v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset, \\
+	& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \text{if } v \in K, \, I'= J' \oplus K' \, : \, K' \neq \emptyset, 
+\end{align}
+
+to prove that \eqref{eq:ineq-lb} holds true, we have to verify that it holds for \(x\) such that, for every \(v \in I\), we have either \(x_v = l_v\) or \(x_v = u_v\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
+\begin{align*}
+	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
+	& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
+	& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v
+\end{align*}
+case a) \(K_1 = \emptyset \),
+\begin{align*}
+	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+	&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+	& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
+	&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
+	&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v
+\end{align*}
+where the last inequality hold because standard relaxation of multilinear polytope\\
+case b) \(|K_1| \geq 2\) even,
+\begin{align*}
+	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
+	& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v
+\end{align*}
+where the last inequality holds because \(0 < u_v \leq 1\) \\
+case c) \(|K_1| \) odd, \(w \in K_1\)
+\begin{align*}
+	z_I + \sum_{v \in I} (u_v - x_v) & =  (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
+	& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
+\end{align*}
 
 \end{document}

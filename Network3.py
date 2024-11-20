@@ -338,9 +338,9 @@ n = network()
 n.load_case(case)
 
 # %%
-# n.init_jabr_model()
-# n.m.optimize()
+n.init_jabr_model()
+n.m.optimize()
 
 #%%
-n.init_bouquet_model()
-n.m.optimize()
+# n.init_bouquet_model()
+# n.m.optimize()
