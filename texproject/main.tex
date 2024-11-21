@@ -9,6 +9,14 @@
 \newcommand{\ambrogio}[2][]{\todo[color=violet!40!,#1]{\textsf{VW:} #2}}
 \newcommand{\gr}[2][]{\todo[color=green!20,#1]{\textsf{G:} #2}}
 
+\newcommand{\printthis}[2][false]{%
+	\ifbool{#1}{%
+		#2%
+	}{%
+		% Drop it!!!!!
+	}%
+}% End of \printthis
+%
 
 %theorem enviroments:
 \newtheorem{example}{Example}
@@ -225,8 +233,101 @@
 	
 	
 	
+		
+
+	\section{Other cuts}
+	Let \(I\) a set of indices and \(x_v\), \(v \in I\), continuous variables such that \(x_v \in [l_v, u_v] \subset [-1, 1]\). Let also the set \(I\) be partitioned in two set such that  \(I = J \oplus K\) and 
+	\begin{subequations}
+		\begin{align}
+			& l_v > 0, & u_v = 1, && \forall v \in J, \label{eq:cos-var}\\
+			& l_v = - u_v, & u_v < 1,&&  \forall v \in K. \label{eq:sin-var}
+		\end{align}
+	\end{subequations}
+	If we define \(z_I \coloneqq \prod_{v \in I} x_v\) and \(I' \coloneqq I \setminus \{v\}\), then the following lower and upper bounds trivially hold:
+	\begin{subequations}
+		\begin{align}
+			& z_I \leq x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \\
+			& z_I \leq |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+			& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+			& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
+			& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset.
+		\end{align}
+	\end{subequations}
 	
-	\section{Feasible directions}
+	\begin{lemma}
+		The following inequality holds:
+		\begin{equation}
+			z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
+		\end{equation}
+	\end{lemma}
+	\begin{proof}
+		Because we are dealing with a multilinear inequality, it is sufficient to verify that it holds for every vertex of the multidimensional rectangular cuboid
+		\begin{equation*}
+			\mathfrak{C} \coloneqq \prod_{v \in I} [l_v, u_v] \subset [-1, 1]^{|I|}.
+		\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
+		\begin{align*}
+			z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
+			& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
+			& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v.
+		\end{align*}
+		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
+		\begin{itemize}
+			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+				&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+				& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
+				&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
+				&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
+			\end{align*}
+			where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
+			\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
+				& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
+			\end{align*}
+			where the last inequality holds because \(0 < u_v \leq 1\).
+			\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
+				& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
+			\end{align*}
+		\end{itemize}
+		This concludes the proof.
+	\end{proof}
+	\begin{observation}
+		Note that, by performing slightly more complicated calculations, similar results can be obtained even when hypothesis \eqref{eq:cos-var}--\eqref{eq:sin-var} are omitted.
+	\end{observation}
+
+\section{Bounds on Loop constraints violation}
+We want to confront different possible relaxations in order to pick the one which minimizes the violation of the loop constraint.
+The violation of the loop constraint comes from the fact that a solution \(x\) can violate the following equality: 
+\[z_I = \prod_{v \in I}x_v\]
+We are thus interested in the following quantity, 
+\[\epsilon_I \coloneqq \sup_{(z_I,x) \in PrR} |z_I - \prod_{v \in I}x_v|
+\]
+To give a bound on the violation of the loop constraint.
+For simplicity we study the case in which the variables are in the interval \([0,1]\), we give a lower bound on \(\epsilon_I\) by considering the error on the convexification of \(Pr\).
+
+\newcommand{\convex}{\mathcal{C}}
+\begin{proposition}
+  \label{prop: error convexification}
+  Let \(I\) be a set of variables, then
+  \[
+    \epsilon_I \geq \sup_{(z_i,x) \in \convex{(Pr)}} |z_I - \prod_{v \in I}x_v| = \left(\frac{1}{|I|U_I}\right)^{\frac{1}{|I|}}\left(1 - \frac{1}{|I|U_I}\right)
+  \]
+  Where \(U_I \coloneqq \prod_{v \in I}max(|u_v|,|l_v|)\)
+  \gr[]{mhhh se lv è più grande di zero l'errore è più piccolo di così.}
+\end{proposition}
+\begin{proof}
+We start by the case where \(l_v=0\). It can be easily (?) shown, that the point which get the supremum values is of the type \((z_I, tu_{v_1},\ldots, tu_{v_k},\ldots)\) where \(k=|I|\).
+Where \(z_I = t\). Thus we calculate \(\sup_{t \in [0,1]} t- \prod_{v \in I}tu_v\) = \(\sup_{t \in [0,1]} t- t^k\prod_{v \in I}u_v\).
+\end{proof}
+
+
+
+\printthis[false]{
+\section{Feasible directions}
 	
 	Let \(x_0 = (P_0,Q_0,c_0,s_0)\) be a feasible solution of the OPF problem \eqref{Jabr equality model} with the loop constraints \eqref{loop constraint}.
 	We want to find feasible directions \(x_0 = (\stP,\stQ,\stc,\sts)\), that is such that \(x_1 = (P_0+\stP,Q_0+\stQ,c_0+\stc)\) is still a feasible solution of the OPF problem.
@@ -313,8 +414,8 @@
 		\stS_{km} &= \stP_{km} + j\stQ_{km} \\
 		\sum_{km \in L}\stS_{km}+\stP_k^L+i\stQ_k^L &= \sum_{g \in \mathcal{G}(k)}{\stP_g^G} + i\sum_{g \in \mathcal{G}(k)}{\stQ_g^G} \label{Power Flow Constraint J} 
 	\end{align}
-	
-	
+
+  	
 	\subsection{Other constraints}
 	Magnitude constraints are what limit the step size:
 	\begin{align}
@@ -356,67 +457,5 @@
 	\gr[]{If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}
 	
 	\newpage
-	\section{Other cuts}
-	Let \(I\) a set of indices and \(x_v\), \(v \in I\), continuous variables such that \(x_v \in [l_v, u_v] \subset [-1, 1]\). Let also the set \(I\) be partitioned in two set such that  \(I = J \oplus K\) and 
-	\begin{subequations}
-		\begin{align}
-			& l_v > 0, & u_v = 1, && \forall v \in J, \label{eq:cos-var}\\
-			& l_v = - u_v, & u_v < 1,&&  \forall v \in K. \label{eq:sin-var}
-		\end{align}
-	\end{subequations}
-	If we define \(z_I \coloneqq \prod_{v \in I} x_v\) and \(I' \coloneqq I \setminus \{v\}\), then the following lower and upper bounds trivially hold:
-	\begin{subequations}
-		\begin{align}
-			& z_I \leq x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \\
-			& z_I \leq |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
-			& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
-			& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
-			& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset.
-		\end{align}
-	\end{subequations}
-	
-	\begin{lemma}
-		The following inequality holds:
-		\begin{equation}
-			z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
-		\end{equation}
-	\end{lemma}
-	\begin{proof}
-		Because we are dealing with a multilinear inequality, it is sufficient to verify that it holds for every vertex of the multidimensional rectangular cuboid
-		\begin{equation*}
-			\mathfrak{C} \coloneqq \prod_{v \in I} [l_v, u_v] \subset [-1, 1]^{|I|}.
-		\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
-		\begin{align*}
-			z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
-			& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
-			& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v.
-		\end{align*}
-		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
-		\begin{itemize}
-			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-				&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-				& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
-				&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
-				&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
-			\end{align*}
-			where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
-			\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
-				& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
-			\end{align*}
-			where the last inequality holds because \(0 < u_v \leq 1\).
-			\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
-				& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
-			\end{align*}
-		\end{itemize}
-		This concludes the proof.
-	\end{proof}
-	\begin{observation}
-		Note that, by performing slightly more complicated calculations, similar results can be obtained even when hypothesis \eqref{eq:cos-var}--\eqref{eq:sin-var} are omitted.
-	\end{observation}
+}
 \end{document}
