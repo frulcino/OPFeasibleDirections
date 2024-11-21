@@ -357,50 +357,66 @@ Since the constraints are affine, problem \eqref{prob: Step Problem} can be solv
 
 \newpage
 \section{Other cuts}
-\(x_v\) variables, \(v \in I\), \(x_v \in [l_v, u_v] \subset [-1, 1]\). \(I = J \oplus K\) such that
-\begin{align}
-	& l_v > 0, \; u_v = 1, &\forall v \in J \\
-	& l_v = - u_v, \; u_v < 1,& \forall v \in K
-\end{align}
-If we define \(z_I \coloneqq \prod_{v \in I} x_v\), it holds
-\begin{align}
-	& z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v, \label{eq:ineq-lb}\\
-	& z_I \leq x_v \prod_{v' \neq v} u_{v'} & \forall v \in J, \\
-	& z_I \leq |x_v| \prod_{v' \neq v} u_{v'} & \forall v \in K,
-\end{align}
-fix \(v \in I\) and define \(I' \coloneqq I \setminus \{v\}\)
-\begin{align}
-	& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \text{if } v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
-	& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \text{if } v \in K, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
-	& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \text{if } v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset, \\
-	& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \text{if } v \in K, \, I'= J' \oplus K' \, : \, K' \neq \emptyset, 
-\end{align}
+Let \(I\) a set of indices and \(x_v\), \(v \in I\), continuous variables such that \(x_v \in [l_v, u_v] \subset [-1, 1]\). Let also the set \(I\) be partitioned in two set such that  \(I = J \oplus K\) and 
+\begin{subequations}
+	\begin{align}
+		& l_v > 0, & u_v = 1, && \forall v \in J, \label{eq:cos-var}\\
+		& l_v = - u_v, & u_v < 1,&&  \forall v \in K. \label{eq:sin-var}
+	\end{align}
+\end{subequations}
+If we define \(z_I \coloneqq \prod_{v \in I} x_v\) and \(I' \coloneqq I \setminus \{v\}\), then the following lower and upper bounds trivially hold:
+\begin{subequations}
+	\begin{align}
+		& z_I \leq x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \\
+		& z_I \leq |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+		& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+		& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
+		& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset.
+	\end{align}
+\end{subequations}
 
-to prove that \eqref{eq:ineq-lb} holds true, we have to verify that it holds for \(x\) such that, for every \(v \in I\), we have either \(x_v = l_v\) or \(x_v = u_v\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
+\begin{lemma}
+	The following inequality holds:
+	\begin{equation}
+		z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
+	\end{equation}
+\end{lemma}
+\begin{proof}
+Because we are dealing with a multilinear inequality, it is sufficient to verify that it holds for every vertex of the multidimensional rectangular cuboid
+\begin{equation*}
+	\mathfrak{C} \coloneqq \prod_{v \in I} [l_v, u_v] \subset [-1, 1]^{|I|}.
+\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
 \begin{align*}
 	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
 	& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
-	& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v
+	& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v.
 \end{align*}
-case a) \(K_1 = \emptyset \),
-\begin{align*}
-	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-	&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-	& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
-	&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
-	&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v
-\end{align*}
-where the last inequality hold because standard relaxation of multilinear polytope\\
-case b) \(|K_1| \geq 2\) even,
-\begin{align*}
-	z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
-	& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v
-\end{align*}
-where the last inequality holds because \(0 < u_v \leq 1\) \\
-case c) \(|K_1| \) odd, \(w \in K_1\)
-\begin{align*}
-	z_I + \sum_{v \in I} (u_v - x_v) & =  (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
-	& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
-\end{align*}
-
+We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
+\begin{itemize}
+	\item[\((i)\)] \(K_1 = \emptyset \), for which we have
+	\begin{align*}
+		z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+		&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+		& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
+		&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
+		&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
+	\end{align*}
+	where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
+	\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
+	\begin{align*}
+		z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
+		& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
+	\end{align*}
+	where the last inequality holds because \(0 < u_v \leq 1\).
+	\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
+	\begin{align*}
+		z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
+		& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
+	\end{align*}
+\end{itemize}
+This concludes the proof.
+\end{proof}
+\begin{observation}
+	Note that, by performing slightly more complicated calculations, similar results can be obtained even when hypothesis \eqref{eq:cos-var}--\eqref{eq:sin-var} are omitted.
+\end{observation}
 \end{document}

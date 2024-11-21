@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.13)  20 NOV 2024 10:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.13)  21 NOV 2024 09:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -693,6 +693,11 @@ LaTeX Font Info:    Font shape `OT1/cmss/m/it' in size <10> not available
 [8]
 
 [9]
+LaTeX Font Info:    Trying to load font information for U+euf on input line 387
+.
+ (C:\Users\A12\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\ueuf.fd
+File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
+)
 
 [10]
 
@@ -703,11 +708,11 @@ L3 programming layer <2024-05-08>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 16410 strings out of 473938
- 324651 string characters out of 5728335
+ 16432 strings out of 473938
+ 325109 string characters out of 5728335
  1953893 words of memory out of 5000000
- 38939 multiletter control sequences out of 15000+600000
- 563247 words of font info for 55 fonts, out of 8000000 for 9000
+ 38955 multiletter control sequences out of 15000+600000
+ 563955 words of font info for 58 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  117i,14n,121p,774b,1045s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\A12\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm10
@@ -729,10 +734,11 @@ cmsy10.pfb><C:/Users/A12/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmsy5.pfb><C:/Users/A12/AppData/Local/Programs/MiKTeX/fonts/type1/public
 /amsfonts/cm/cmsy7.pfb><C:/Users/A12/AppData/Local/Programs/MiKTeX/fonts/type1/
 public/amsfonts/cm/cmti10.pfb><C:/Users/A12/AppData/Local/Programs/MiKTeX/fonts
-/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (11 pages, 248261 bytes).
+/type1/public/amsfonts/euler/eufm10.pfb><C:/Users/A12/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (11 pages, 253864 bytes).
 PDF statistics:
- 131 PDF objects out of 1000 (max. 8388607)
+ 136 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 
