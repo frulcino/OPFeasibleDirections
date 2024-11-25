@@ -256,6 +256,8 @@
 	
 	\begin{lemma}
 		The following inequality holds:
+		\textcolor{violet}{\textbf{Questo considera l'iperpiano tangente nel punto avente coordinate \(u_v, u_v, \ldots, u_v, \prod u_v\). Si riesce a fare lo stesso per altri punti del cuboide? Possibile che qualcuno lo ha già fatto?}}
+
 		\begin{equation}
 			z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
 		\end{equation}
@@ -301,31 +303,85 @@
 
 \section{Bounds on Loop constraints violation}
 We want to confront different possible relaxations in order to pick the one which minimizes the violation of the loop constraint.
+%
 The violation of the loop constraint comes from the fact that a solution \(x\) can violate the following equality: 
 \[z_I = \prod_{v \in I}x_v\]
 We are thus interested in the following quantity, 
 \[\epsilon_I \coloneqq \sup_{(z_I,x) \in PrR} |z_I - \prod_{v \in I}x_v|
 \]
 To give a bound on the violation of the loop constraint.
-For simplicity we study the case in which the variables are in the interval \([0,1]\), we give a lower bound on \(\epsilon_I\) by considering the error on the convexification of \(Pr\).
+%
+We give a lower bound on \(\epsilon_I\):
 
 \newcommand{\convex}{\mathcal{C}}
 \begin{proposition}
-  \label{prop: error convexification}
-  Let \(I\) be a set of variables, then
+	\label{prop: error convexification}
+	Let \(I\) be a set of variables. Then
+	\[
+	  \epsilon_I \geq \sup_{(z_i,x) \in \convex{(Pr)}} |z_I - \prod_{v \in I}x_v| = U_I\left(\frac{1}{|I|}\right)^{\frac{1}{|I|-1}}\left(1 - \frac{1}{|I|}\right),
+	\]
+	where \(U_I \coloneqq \prod_{v \in I} \max(|u_v|,|l_v|)\).
+	\gr[]{mhhh se \(l_v\) è più grande di zero l'errore è più piccolo di così.}
+  \end{proposition}
+  
+  \begin{proof}
+  We start with the case where \(l_v = 0\). It can be easily (?) shown that the point which achieves the supremum is of the type \((z_I, tu_{v_1},\ldots, tu_{v_k},\ldots)\), where \(k = |I|\),
+  with \(z_I = t\prod_{v \in I}u_v\). Thus, we calculate:
   \[
-    \epsilon_I \geq \sup_{(z_i,x) \in \convex{(Pr)}} |z_I - \prod_{v \in I}x_v| = \left(\frac{1}{|I|U_I}\right)^{\frac{1}{|I|}}\left(1 - \frac{1}{|I|U_I}\right)
+  \sup_{t \in [0,1]} t\prod_{v \in I}u_v - \prod_{v \in I}tu_v = \sup_{t \in [0,1]} \prod_{v \in I}u_v(t - t^k).
   \]
-  Where \(U_I \coloneqq \prod_{v \in I}max(|u_v|,|l_v|)\)
-  \gr[]{mhhh se lv è più grande di zero l'errore è più piccolo di così.}
-\end{proposition}
-\begin{proof}
-We start by the case where \(l_v=0\). It can be easily (?) shown, that the point which get the supremum values is of the type \((z_I, tu_{v_1},\ldots, tu_{v_k},\ldots)\) where \(k=|I|\).
-Where \(z_I = t\). Thus we calculate \(\sup_{t \in [0,1]} t- \prod_{v \in I}tu_v\) = \(\sup_{t \in [0,1]} t- t^k\prod_{v \in I}u_v\).
-\end{proof}
+  The supremum is attained at \(t = \left(\frac{1}{|I|}\right)^{\frac{1}{|I|-1}}\), and thus the error is \[\prod_{v \in I}u_v\left(\frac{1}{|I|}\right)^{\frac{1}{|I|}}\left(1 - \frac{1}{|I|}\right)\].
+  
+  In general, for \(l_v\) possibly negative, we observe that the relaxation introduced in Section \textcolor{green}{ref} is not convex. However, if restricted to each quadrant, it is convex, and we can apply the same argument. The error is then larger than the maximum error of the convexification of the graph of the monomial over each quadrant, and thus the thesis follows.
+  \end{proof}
+  
+  We now consider how the error on the monomial approximation influences the error on the loop constraint:
+\begin{align}
+	\epsilon_C &\coloneqq | \prod_{v \in V}c_{vv}- \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}(-1)^k\prod_{e \in A}c_{e}\prod_{e \in A^c}s_e|\\
+	& \leq  |z^v_C + \epsilon^v_{C}+ \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}z_A + \epsilon_A|\\
+	& \leq  |\prod_{v \in V}\epsilon^v_{C}|+ \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}|\epsilon_A| \\
+	& \leq \overline{\epsilon}_C + \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}\overline{\epsilon}_C \cong 2^{|C|-1}\overline{\epsilon}_C
+\end{align}
 
-
-
+As done in \textcolor{green}{cite}, cycles can be decomposed into cycles of length 3 or 4 (resulting in McCormick relaxations of binomial), 
+or larger cycles (resulting in generalized monomial relxations).
+%
+We determine the optimal length subcycle length to minimize the loop constraint violation.
+%
+To do this, given the constraints induced by the subcycles of \(C\) we relate these to the loop constraint over \(C\) to confront the error.
+%
+First, given \(C\), decomposed in the cycles \(C_0,\ldots,C_k\), let \(\epsilon_{C_i}\) be the loop constraint violation over the subcycle \(C_i\), and let \(\epsilon^{s}_{C_i}\) be the constraint violation respect to the constraint \(\prod_{v \in C_i} \sin(\sum_{e \in \cE(C_i)}\theta_e) = 0\).
+Lastly, we denote by \(LHS^{c}_{C_i}\) (resp. \(RHS^{s}_{C_i}\)) the left hand side (right hand side) of the constraint \(\prod_{v \in C_i}c_{vv}\cos(\sum_{e \in \cE(C_i)}\theta_e) = \prod_{v \in C_i}c_{vv}\).
+Consider:
+\[
+\prod_{v \in C}c_{vv}\cos(\sum_{e \in \cE(C)}\theta_e) = \prod_{v \in C}c_{vv}
+\]
+By expanding the cosine, and substituting \(\cos(\theta_e)|V_{e_0}||V_{e_1}|\) and  \(\sin(\theta_e)|V_{e_0}||V_{e_1}|\), by \(c_{e}\) and \(s_e\) respectively, we obtain the loop constraint.
+Alternatively, observe that:
+\[
+\cos(\sum_{e \in \cE(C)} \theta_e) = \cos(\sum_{i = 0}^k \sum_{e \in C_i}\theta_e) = \cos(\sum_{i = 0}^k \theta_{C_i})
+\]
+Where \(\theta_{C_i} \coloneqq \sum_{e \in C_i}\theta_e\). 
+%
+Thus, by expanding the last sum respect to the angles \(\theta_{C_i}\) 
+and multiplying by \(\prod_{i=0}^k\prod_{v \in C_i}c_{vv}\), 
+we obtain the loop constraint expressed respect in function of the LHS of the loop constraints of the subcycles:
+\[
+\sum_{h=0}^{\lfloor\frac{k}{2}\rfloor}(-1)^h\sum_{\substack{A \subset [k] \\ |A| = 2h}}\prod_{i \in A}LHS^{c}_{C_i}\prod_{i \in A^c}LHS^{s}_{C_i} = \prod_{i=0}^k\prod{v\in C_i}c_{vv}
+\]
+Observe that \(LHS^c_{C_i} = RHS^C_{C_i} + \epsilon^s_{C_i}\) and \(LHS^s_{C_i} = \epsilon^s_{C_i}\), and that dividing by \(\prod_{i = 0}^k c_{v_i,v_i}\) we obtain the expression of the loop constraint over \(C\).
+Thus:
+\[
+\frac{1}{\prod_{i = 0}^k c_{v_i,v_i}}\sum_{h=0}^{\lfloor\frac{k}{2}\rfloor}(-1)^h\sum_{\substack{A \subset [k] \\ |A| = 2h}}\prod_{i \in A}(RHS^{c}_{C_i}+ \epsilon_{C_i})\prod_{i \in A^c}\epsilon^s_{C_i}) = RHS_{C}
+\]
+This sum can be divided in two sums, one corresponding to the left hand side of the loop constraint over \(C\),  and the other corresponding to the loop constraint violation, depending on \(\epsilon^c\) and \(\epsilon^s\).
+%
+By taking the absolute values, we obtain:
+\[
+\epsilon_C \leq 2^{|k|-1} \overline{\epsilon}_{C}^A
+\]
+Where \(\overline{\epsilon}_{C}^A\) is the average of the products in the sum. Then, since \(k = |C|/c\), where \(c = |C_i|\) the optimal length of the subcycles is \textcolor{red}{\(c = {42*y}\) with \(y\) to be determined}.
+\textcolor{red}{MHHHHH va scritto meglio}
 \printthis[false]{
 \section{Feasible directions}
 	
