@@ -259,46 +259,81 @@
 		\textcolor{violet}{\textbf{Questo considera l'iperpiano tangente nel punto avente coordinate \(u_v, u_v, \ldots, u_v, \prod u_v\). Si riesce a fare lo stesso per altri punti del cuboide? Possibile che qualcuno lo ha già fatto?}}
 
 		\begin{equation}
-			z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
+			z_I + \sum_{v \in I} c_v (u_v - x_v) \geq \prod_{v \in I} u_v, \quad c_v \coloneqq \prod_{v' \in I \setminus \{v\}}u_{v'}. \label{eq:ineq-lb}
 		\end{equation}
+		
 	\end{lemma}
 	\begin{proof}
 		Because we are dealing with a multilinear inequality, it is sufficient to verify that it holds for every vertex of the multidimensional rectangular cuboid
 		\begin{equation*}
 			\mathfrak{C} \coloneqq \prod_{v \in I} [l_v, u_v] \subset [-1, 1]^{|I|}.
-		\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
+		\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. By defining \(k_1 \coloneqq |K_1| \), we then have
 		\begin{align*}
-			z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
-			& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
-			& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v.
+			z_I + \sum_{v \in I} c_v (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} c_v (u_v - x_v) + \sum_{v \in I_2} c_v(u_v - x_v) = \\
+			& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} c_v(u_v - l_v)= \\
+			& =   (-1)^{k_1}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} c_v(1 - l_v) + 2\sum_{v \in K_1}c_v u_v = \\
+			& = A + B + C.
 		\end{align*}
-		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
-		\begin{itemize}
-			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-				&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
-				& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
-				&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
-				&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
-			\end{align*}
-			where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
-			\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
-				& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
-			\end{align*}
-			where the last inequality holds because \(0 < u_v \leq 1\).
-			\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
-			\begin{align*}
-				z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
-				& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
-			\end{align*}
-		\end{itemize}
-		This concludes the proof.
+		Now, we rewrite each of the three terms. First,
+		\begin{align*}
+		A & = (-1)^{k_1}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v = (-1)^{k_1}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1}u_v \prod_{v \in J_1} l_v = \\
+		& =  (-1)^{k_1}\prod_{v \in I}u_v \prod_{v \in J_1} l_v,
+		\end{align*}
+		where the second equality holds because \(u_v = 1, \forall v \in J_1\). Second,
+		\begin{align*}
+			B & = \sum_{v \in J_1} c_v(1 - l_v) = \sum_{v \in J_1} (\prod_{v' \in I \setminus \{v\}}u_{v'})(1 - l_v) =
+			\sum_{v \in J_1} (\prod_{v' \in I }u_{v'})(1 - l_v) = \\
+			& =(\prod_{v \in I }u_v) \sum_{v \in J_1} (1 - l_v),
+		\end{align*}
+		where the third equality holds because \(u_v = 1 \, \forall v \in J_1\). Finally,
+		\begin{align*}
+			C & = 2\sum_{v \in K_1}c_v u_v  = 2 \sum_{v \in K_1} (\prod_{v' \in I \setminus \{v\}}u_{v'})u_v =
+			2 \sum_{v \in K_1} (\prod_{v' \in I }u_{v'})  = \\ 
+			& = 2k_1 (\prod_{v \in I }u_v).
+		\end{align*}
+		We then have 
+		\begin{align*}
+				z_I + \sum_{v \in I} c_v (u_v - x_v) &= A+B+C = \\
+				& = (\prod_{v \in I }u_v) ((-1)^{k_1} \prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) +  2k_1).
+		\end{align*}
+		To conclude, we just need to prove that
+		\begin{equation*}
+			(-1)^{k_1} \prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) +  2k_1 \geq 1,
+		\end{equation*} 
+		but this is true because
+		\begin{align*}
+			(-1)^{k_1} \prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 & - l_v)  +  2k_1 = \\
+			& = ((-1)^{k_1}-1) \prod_{v \in J_1} l_v + 2k_1 + \prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) =  \\
+			& \geq ((-1)^{k_1}-1) \prod_{v \in J_1} l_v + 2k_1 + 1 \geq (-1)^{k_1} + 2k_1 \geq 1,
+		\end{align*}
+		where the first inequality holds because \(\prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) \geq 1\) because of the standard multilinear relaxation. \textcolor{red}{cita}, the second inequality holds because \(0 < l_v < 1\) and so \(0 < \prod_{v \in J_1} l_v < 1\), and the last inequality holds because \(k_1 \geq 0\) integer.
+%		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
+%		\begin{itemize}
+%			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
+%			\begin{align*}
+%				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+%				&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+%				& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
+%				&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
+%				&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
+%			\end{align*}
+%			where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
+%			\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
+%			\begin{align*}
+%				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
+%				& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
+%			\end{align*}
+%			where the last inequality holds because \(0 < u_v \leq 1\).
+%			\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
+%			\begin{align*}
+%				z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
+%				& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
+%			\end{align*}
+%		\end{itemize}
+%		This concludes the proof.
 	\end{proof}
 	\begin{observation}
-		Note that, by performing slightly more complicated calculations, similar results can be obtained even when hypothesis \eqref{eq:cos-var}--\eqref{eq:sin-var} are omitted.
+		Note that, with the same notation of the proof above, \eqref{eq:ineq-lb} is tight for every vertex of \(\mathfrak{C}\) for which \(|I_1| \leq 1\).
 	\end{observation}
 
 \section{Bounds on Loop constraints violation}
