@@ -9,6 +9,14 @@
 \newcommand{\ambrogio}[2][]{\todo[color=violet!40!,#1]{\textsf{VW:} #2}}
 \newcommand{\gr}[2][]{\todo[color=green!20,#1]{\textsf{G:} #2}}
 
+\newcommand{\printthis}[2][false]{%
+	\ifbool{#1}{%
+		#2%
+	}{%
+		% Drop it!!!!!
+	}%
+}% End of \printthis
+%
 
 %theorem enviroments:
 \newtheorem{example}{Example}
@@ -45,315 +53,465 @@
 \nc{\cE}{\mathcal{E}}
 \nc{\cS}{\mathcal{S}}
 \begin{document}
+	
+	
+	
+	\section{Jabr Model}
+	
+	
+	
+	For the OPF model construction we the network as directed graph
+	$(\boB,\boL)$ where $\boB$ is the set of Buses and and $\boL \subset \boB \times \boB$ is the 
+	set of branches of the network and for each adjacent buses $k,m$ both $(k,m)$ and $(m,k)$ are
+	in $\boL$. So the line $l$ adjacent to $k,m$ is modeled by two edges in the arc $\{(k,m),(m,k)\}$.
+	$L$ can be partitioned in $\boL_0$ and $L_1$ with $|L_0|=|L_1|$ where every line $l$, adjacent 
+	to the buses $k,m$ and with a transformer at $k$, is oriented so that $(k,m) \in L_0$ and 
+	$(m,k) \in \boL_1$. We also consider a set $\boG$ of generators, partitioned into 
+	(possibly empty) subsets $\boG_k$ for every bus $k \in \boB$.
+	We consider the following convex Jabr relaxation of the OPF problem:
+	\begin{align}
+		\label{Jabr equality model}
+		\inf_{\substack{P^G_g, Q^G_g, c_{km}, \\ s_{km}, S_{km}, P_{km}, Q_{km}}} & \opfcost(x) \coloneqq \sum_{g \in \mathcal{G}}{F_g(P_g^G)} \\
+		\text{Subject to:} & \; \forall km \in \boL \nonumber \\
+		& c_{km}^2 + s_{mk}^2 \leq c_{kk}c_{mm} \quad \text{Jabr constraint} \label{Jabr constraint}\\
+		& P_{km} = G_{kk}c_{kk}+G_{km}c_{km}+B_{km}s_{km} \label{c to P} \\
+		& Q_{km} = -B_{kk}c_{kk}-B_{km}c_{km}+G_{km}s_{km} \label{c to Q}\\
+		& S_{km} = P_{km} + jQ_{km} \label{PQ to S}\\
+		& \text{Power balance constraints:}\; \forall k \in \boB\nonumber \\
+		& \sum_{km \in L}S_{km}+P_k^L+iQ_k^L = \sum_{g \in \mathcal{G}(k)}{P_g^G} + i\sum_{g \in \mathcal{G}(k)}{Q_g^G} \label{constr: Power Flow Constraint J}\\
+		& \text{Power flow, Voltage, and Power generation limits:} \nonumber \\
+		& P_{km}^2 + Q_{km}^2 \leq U_{km} \label{Power Flow Magnitude Constraint J}\\
+		& V_k^{\text{min}^2} \leq c_{kk} \leq V_k^{\text{max}^2} \label{Voltage Magnitude Constraint J} \\
+		& P_g^{\text{min}} \leq P_g^G \leq P_g^{\text{max}}\label{Power generation Magnitude Constraint J} \\
+		&  c_{kk} \geq 0 \; \\
+		& V_k^{\text{max}} V_m^{\text{max}} \geq c_{km} \geq 0 \; \\ 
+		& - V_k^{\text{max}} V_m^{\text{max}} \leq s_{km} \leq V_k^{\text{max}} V_m^{\text{max}} \; \\
+		& c_{km} = c_{mk}, \;s_{km} = - s_{mk}.
+	\end{align}
+	
+	This relaxation is in general not exact. We can recover exactness thanks to the following result:
+	\begin{proposition}
+		Model \eqref{Jabr equality model} with the additional \emph{loop constraint} \eqref{loop constraint} for every loop in a cycle basis of \((\boB,\boL)\) is exact, we refer to this new model as the \emph{Exact Jabr formulation}
+		
+		\begin{equation}
+			\label{loop constraint}
+			\sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}=\prod_{k=1}^nc_{k_i,k_i}.
+		\end{equation}
+	\end{proposition}
+	
+	In \textcolor{red}{cite}, auxiliary branches were added to the network, dividing each loop in smaller loops, to decrease the degree of the polynomials defining the loop constraint. Then Mc Cormick linearization was applied.
+	The problem with this approach is that one exiliary branch is added for every branch in the loop.
+	This result suggests the following approaches to either find a feasible solution or move along the space of feasible solutions.
+	\begin{itemize}
+		\item Since the loop constraint is multilinear in it's variables, we can consider linear relaxations called \emph{Flower inequalities}, which generalize che classical Mc Cormick relaxations of products of variables. 
+		\item Such relaxation is exact on tree Networks (also known as radial networks). Our objective is, given a network \(\cN = (\boB,\boL)\) which can also not be a tree, consider a radial subnetwork \(\cN' = (\boB,\boL')\), with \(\boL' \subset \boL \) and consider the Jabr model  on \(\cN'\).
+		This solution is not necessarily feasible for the original problem \(\cN\), our objective is to iteratively recover a feasible solution for \(\cN\). 
+		\vspace{1cm}
+		Since the Jabr relaxation is exact on \(\cN'\) it follows that the constraints \ref{Jabr constraint} are respected, the constraints which are violated are the flow constraints on the leaves. We can try to recover feasibility my moving along the solution to the Jabr and Loop constraints.
+		\item Given a feasible solution, find feasible directions.
+	\end{itemize}
+	
+	\section{Linearization of loop constraints}
+	
+	To find feasible relaxations of the loop constraint we follow \textcolor{red}{cite}. It must be noted that a major difference in our approach is that the OPF is not a multilinear optimization problem. So first we show that the same results in \textcolor{red}{cite} can be applied to the OPF.
+	
+	Consider a set of multilinear constraints:
+	\begin{align}
+		\sum_{I \in \cI_j}c_I^j\prod_{v \in I_j} x_v \quad \forall I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \\
+		x_v \in [l_v,u_v] \quad \forall v \in V
+	\end{align}
+	Where \(V\) denotes the variables and \(\cI_j \in \cP(V)\), for \(j = 1,\ldots,m\) are the variables of the monomials appearing in the j-th homogenous constraint.
+	A straight forward linearization is to introduce a variable \(z_I\) for every subset \(I\) of variables appearing in the constraints. Thus we obtain the following equivalent problem.
+	
+	\begin{align}
+		\sum_{I \in \cI_j}c_I^jz_I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \label{constr: linearized multilinear constraint} \\
+		z_I = \prod_{i \in I} x_i \quad \forall I \in \cE \coloneqq \cup_{j=1}^m I_j \\
+		x_v \in [l_v,u_v] \quad \forall v \in V
+	\end{align}
+	
+	By affine afformation we can assume the variables \(x_v\) to be in the form \(c_v \in [0,1]\). Note that such affine transformations need to be handled with care, we will cover this in subsection \ref{subsection:Handling affine trasformations}.\
+	Since contraint \eqref{constr: linearized multilinear constraint} is now linear, we are now interested in the linearization of the following set \(Pr \coloneqq  \{(x,z) \in [0,1]^V \times [0,1]^{\cE} \mid z_I = \prod_{i \in I} \forall I \in \cE\}\).
+	If such constraints were the only ones, and if the cost was also multilinear, we would know that the solution would be on one of the vertices of the hypercube and the observation that follows would be trivially true. Since in the OPF the cost is not multilinear and there are other types of constraints we show that this is also a relaxation for \(Pr\).
+	\begin{definition}[Standard form relaxation]\label{def: standard form relaxation}
+		Let the polyhedral \(PrR\) be defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4}.
+		\gr[]{fixalignment}
+		\begin{align}
+			z_I &\leq x_v   \quad\forall v \in I \in \cE \label{constr: PrR1} \\
+			z_I + \sum_{v \in I}(1-x_v) &\geq 1 \quad \forall I \in \cE \label{constr: PrR2}\\
+			z_I &\geq 0  \quad\forall I \in \cE \label{constr: PrR3}\\
+			x_v &\in [0,1]  \quad \forall v \in V \label{constr: PrR4}
+		\end{align}
+	\end{definition}
+	% \begin{proof}
+		% \gr{This is actually much easier since by fixing all points except one we have an affine functions}
+		% We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
+		% Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
+		% This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
+		% This is trivially true for \(n = 1\). If \(n > 1 \), let \(HC \coloneqq [0,1]^n \) denote the hypercube, Let \(F_i \coloneqq \{x \in HC \mid x_i = 0\}\) and \(G_i \coloneqq \{x \in HC \mid x_i = 1\}\) denote the faces of the hypercube. We have that \[ HC = (HC \cap (F_1 + \langle e_1 - e_2\rangle)) \cup (HC \cap (G_2 + \langle e_1 - e_2\rangle)).\]
+		% Thus it is sufficient to show that for every \(x \in F_1\) and \(y \in G_2\) the function \(f_x(u) \coloneqq a(x + u(e_2 - e_1))\) and the funciton \(g_y(v) \coloneqq a(y + v(e_1 - e_2))\) are non negative for all \(u \in [0,x_2]\) and \(v \in [x_1, 1]\) respectively. Expanding the expression of \(f_x\) we obtain:
+		% \[
+		% f_x(u) = a( u, x_2 - u, x_3, x_4, \ldots, x_n) = - u^2 \prod_{i=3}^nx_i + u \prod_{i=2}^nx_n - sum_{i=2}^nx_i + n - 1
+		% \]
+		% The second derivate of \(f_x(u)\) respect to \(u\) is thus \(f''_x(u) = -2 \prod_{i = 3} x_i \leq 0\) and is thus concave respect to \(v\). The value of \(f_x\) on the boundary points \(u =0,x_1\) is:
+		% \begin{align}
+			%   f_x(0) = a(0, x_2, \ldots, x_n) = \sum_{i=2}^nx_i + n - 1  \geq 0 \\
+			%   f_x(x_2) = a(x_2, 0 , x_3, \ldots, x_n) = \prod_{i=2}^nx_i - \sum_{i=2}^nx_i + n - 2 \geq 0.
+			% \end{align}
+		% Where the second inequality is true by induction. Thus for every \(x \in F_1\) for every \(u \in [x_2,1]\) we have \(f_x \geq 0\).
+		% Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we have \(g_y \geq 0\). Thus for all \(x \in C\), \(a(x) \geq 0\) which concludes the proof. 
+		% \end{proof}
+	The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{def: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
+	Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is that we cannot restict the hypercuber \(C\) to its vertices becase other point could also be optimal for the OPF problem. Se we check the additional flower inequalities are still valid for \(Pr\).
+	
+	\begin{definition}[extendend flower inequalities.]
+		Let \(I \in \cE\) and let \(J_1,\ldots,J_k \in \cE \cup \cS\) be such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) holds for \(i = 1,2,\ldots,k\). The \emph{extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) is defined as
+		\begin{equation}\label{constr: extended flower inequality}
+			z_I + \sum_{i=1}^k(1-z_{J_i}) \geq 1
+		\end{equation}
+		The extended flower relaxation \(FR \subset [0,1]^{\cE\cup\cS}\) are the elements \(x \in [0,1]^{\cE\cup\cS}\) for which all the extended flower inequalities hold.
+	\end{definition}
+	
+	\begin{proposition}
+		For all \(x \in Pr\) and  \(I \in \cE\), \(J_1,\ldots,J_k \in \cE \cup \cS\) such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) for \(i = 1,2,\ldots,k\). Then \emph{extended flower inequality} \eqref{constr: extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) holds for \(x\). In particular \(Pr \subset FR\).
+	\end{proposition}
+	\begin{proof}
+		For \(|I| = 1\) this is trivally true.
+		For \(|I| = n > 1\), wlog \(I = \{1,\ldots,n\}\). We want to see that for any \(x \in C_{\cup_kJ_k} \coloneqq [0,1]^{\cup_{k=1}^KJ_K}\) we have \(a(x) = \prod_{i \in I}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k}x_j) - 1 \geq 0\). Consider the face \(F = \{x \in [0,1]^{\cup_{k=1}^KJ_K} \mid x_1 = 0\}\). Then \(C_{\cup J_k} = C_{\cup J_k} \cap ( F + \langle e_1 \rangle)\).
+		Thus we only need to show that for every \(x \in F\) the function \(f_x(x_1) \coloneqq a(x + x_1e_1)\) is positive. This is an affine function, thus it sufficient to show that it is positive at \(x_1 = 0\) and \(x_1 = 1\). For \(x_1 = 0\) this is trivially true. For \(x_1 = 1\), we have \(f_x(1) = \prod_{i \in I\setminus\{1\}}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k \setminus\{1\}}x_j) - 1 \geq 0\) by induction on \(|I|\).
+	\end{proof}
+	By taking \(J_i = \{x_i\}\) for all \(x_i \in I\), since \(z_{J_i} = x_i\), we have:
+	\begin{corollary}
+		\gr[]{ok, to write better}
+		The \emph{standard form relaxation} as in defition \ref{def: standard form relaxation} is a relaxation of \(Pr\). That is \(Pr \subset PrR\).
+	\end{corollary}
+	
+	\gr[inline]{Il resto del paper McCormick strikes back drovebbe valere anche qui, perchè parla della struttura dei rilassamenti, che non dipende da Pr.}
+	
+	\subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
+	In the beginning of the sections, we assumed that the variables \(x_i \in [0,1]\) because affine transformation of homogenous constraints remain homogenous.But it must be noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given a monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
+	Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
+	
+	\begin{observation}
+		\gr[inline]{add observation that they cannot be all positive or all negative. Can we also say something more? maybe not}
+	\end{observation}
+	
+	Let \(C = \{k_1,\ldots, k_n\} \subset \boB \) be a cycle.
+	The variables \(s_{h}\) are in the form \( s_{h} \in [-u_{s_h}, u_{s_h}]\) where \(h = (k_i,k_{i+1})\)  for all \(i = 1,\ldots,n\). We can then substitute \(s_{h}\) with \( u_h s'_h = s_h \) where
+	\(s'_h \in [-1,1]\). 
+	We then define the sign variables \(\sigma_h \in \{0,1\}\) for each \(h \in C\), where \(\sigma_h = 0\) if \(s_h\) is negative and \(1\) if it is positive.
+	We can now rewrite the loop constraint as:
+	
+	% Then for each \(M \subset branches(C)\) we define the problem \(\cC(M)\) obtaining from the OPF problem by restricting the domain of 
+	% \(s'_h\) variables to \(s'_h \in [-1,0]\) if \(h \in M\) and \(s'_h \in [0,1]\) if \(h \in M^c\). We observe that since the monomials appearing in each possible subproblem \(\cC(M)\) are the same, the flower inequalities are the same. The only constraint which is written differently is the loop constraint. Let \(\sigma_h^M \in \{-1,1\}\) be the variable which is equal to \(-1\) if \(h \in M\) and equal to \(0\) if \(h \in M^c\). Then the loop constraint associated to \(\cC(M)\) is 
+	\begin{equation}
+		\sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (\prod_{h \in A} (2\sigma_h-1) u_h) z_A=z'_C
+	\end{equation}
+	Where we substitute the monomial \(\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}\) with \(z_A\) and the product 
+	\(\prod_{k=1}^nc_{k_i,k_i}\) with \(z'_C\). For each even subset \(A \subset [n]\) we introduce the binary variable \(\lambda_A \in \{0,1\}\) which is \(0\) if \(\prod_{h \in A} (2\sigma_h-1)\) is \(-1\) and \(\lambda_A = 1\) otherwise.
+	The loop constraint becomes:
+	\begin{equation}
+		\sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (2\lambda_A - 1)U_A z_A=z'_C
+	\end{equation}
+	The product \( \lambda_Az_A\) can easily be linearized. To enforce the relation  \(2\lambda_A - 1 = \prod_{h \in A}(2\delta_h -1)\), simply note that \(\lambda_A = 0\) if and only if there is an odd number of \(\delta_h\) equal to \(0\), that is, there exists \(m_A \in \integers \) such that:
+	\begin{equation}
+		\lambda_A + 2m_{A} = \sum_{h \in A} \delta_h 
+	\end{equation}
+	\gr[]{In realtà questo non è specifico all'OPF, va bene per tutti i vincoli omogenei e si può fare al posto di fare le trasformazioni affini! }
+	
+	% The parameters \(\lambda_A^M\) fully capture the differences between the loop constraints in the various \(\cC(M)\).
+	% We consider these subproblems as a unique MILP problem the following way:
+	% We introduce a binary variable \(delta_h \in \{0,1\}\) for each \(h \in branches(C)\) which correspond to the sign of \(s_h\) for all \(h \in branches(C)\).
+	
+	
+	% Now, we can either solve all the subproblems in parallel and take the minimum or consider an associated MILP formulation by:
+	% \begin{enumerate}
+		%   \item Add one binary variable of each addend, that is more or less\( 2^C/2\)  + some binding constraints for the signs (which might be the same as the extended flower constraints) constraints: \gr[inline]{Question: given the loop constraint, if I randomly choose the signs of the monomials is it always one of the subproblems or is there one for which this isn't the case? Probably the latter since the number os subproblems is \(2^n\) while the number of possible signs is the number of addents in the sum which is much larger.}
+		%   Now let's consider \(\lambda_A^M\) as binary variables. We want to linearize the product \(\lambda_A^M z_A\), we "can assume" \(\lambda_A^M\) to be binary. We can then linearize the product \(\lambda_A^M z_A\).
+		%   \item Add one binary for each possible A (that is \(2^C\) variables) + \(2*2^C\) constraints
+		% \end{enumerate}
+	
+	
+	
+	
+		
 
+	\section{Other cuts}
+	Let \(I\) a set of indices and \(x_v\), \(v \in I\), continuous variables such that \(x_v \in [l_v, u_v] \subset [-1, 1]\). Let also the set \(I\) be partitioned in two set such that  \(I = J \oplus K\) and 
+	\begin{subequations}
+		\begin{align}
+			& l_v > 0, & u_v = 1, && \forall v \in J, \label{eq:cos-var}\\
+			& l_v = - u_v, & u_v < 1,&&  \forall v \in K. \label{eq:sin-var}
+		\end{align}
+	\end{subequations}
+	If we define \(z_I \coloneqq \prod_{v \in I} x_v\) and \(I' \coloneqq I \setminus \{v\}\), then the following lower and upper bounds trivially hold:
+	\begin{subequations}
+		\begin{align}
+			& z_I \leq x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \\
+			& z_I \leq |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+			& z_I \geq - |x_v| \prod_{v' \in I'} u_{v'}, & \forall v \in K, \\
+			& z_I \geq x_v\prod_{v' \in I'} l_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' = \emptyset, \\
+			& z_I \geq - x_v \prod_{v' \in I'} u_{v'}, & \forall v \in J, \, I'= J' \oplus K' \, : \, K' \neq \emptyset.
+		\end{align}
+	\end{subequations}
+	
+	\begin{lemma}
+		The following inequality holds:
+		\textcolor{violet}{\textbf{Questo considera l'iperpiano tangente nel punto avente coordinate \(u_v, u_v, \ldots, u_v, \prod u_v\). Si riesce a fare lo stesso per altri punti del cuboide? Possibile che qualcuno lo ha già fatto?}}
 
+		\begin{equation}
+			z_I + \sum_{v \in I} (u_v - x_v) \geq \prod_{v \in I} u_v. \label{eq:ineq-lb}
+		\end{equation}
+	\end{lemma}
+	\begin{proof}
+		Because we are dealing with a multilinear inequality, it is sufficient to verify that it holds for every vertex of the multidimensional rectangular cuboid
+		\begin{equation*}
+			\mathfrak{C} \coloneqq \prod_{v \in I} [l_v, u_v] \subset [-1, 1]^{|I|}.
+		\end{equation*} For such a vertex \(x\), we have either \(x_v = l_v\) or \(x_v = u_v\) for every \(v \in I\). Define \(I_1 \coloneqq \{v \in I \, | \, x_v = l_v\}\) and \(I_2 \coloneqq \{v \in I \, | \, x_v = u_v\}\), and \(J_1, J_2, K_1, K_2\) analogously. We then have
+		\begin{align*}
+			z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - x_v) + \sum_{v \in I_2} (u_v - x_v) = \\
+			& =  \prod_{v \in I_1} l_v \prod_{v \in I_2} u_v+ \sum_{v \in I_1} (u_v - l_v)= \\
+			& =   (-1)^{|K_1|}\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v.
+		\end{align*}
+		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
+		\begin{itemize}
+			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+				&= \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) =\\
+				& \geq \prod_{v \in K_2}u_v \prod_{v \in J_1} l_v+ \prod_{v \in K_2}u_v\sum_{v \in J_1} (1 - l_v) = \\
+				&= \prod_{v \in K_2}u_v (\prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v)) = \\
+				&\geq \prod_{v \in K_2}u_v = \prod_{v \in K}u_v = \prod_{v \in I}u_v,
+			\end{align*}
+			where the last inequality hold because of the standard relaxation of multilinear polytope. \textcolor{red}{cita}
+			\item[\((ii)\)]  \(|K_1| \geq 2\) even, for which we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & = \prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v =\\
+				& \geq 2\sum_{v \in K_1}u_v  \geq  \prod_{v \in I} u_v,
+			\end{align*}
+			where the last inequality holds because \(0 < u_v \leq 1\).
+			\item[\((iii)\)]  \(|K_1| \) odd, let \(w \in K_1\), then we have
+			\begin{align*}
+				z_I + \sum_{v \in I} (u_v - x_v) & =  -\prod_{v \in K_1 \cup I_2}u_v \prod_{v \in J_1} l_v+ \sum_{v \in J_1} (1 - l_v) + 2\sum_{v \in K_1}u_v = \\
+				& \geq -u_w + 2 u_w = u_w \geq \prod_{v \in I} u_v
+			\end{align*}
+		\end{itemize}
+		This concludes the proof.
+	\end{proof}
+	\begin{observation}
+		Note that, by performing slightly more complicated calculations, similar results can be obtained even when hypothesis \eqref{eq:cos-var}--\eqref{eq:sin-var} are omitted.
+	\end{observation}
 
-\section{Jabr Model}
+\section{Bounds on Loop constraints violation}
+We want to confront different possible relaxations in order to pick the one which minimizes the violation of the loop constraint.
+%
+The violation of the loop constraint comes from the fact that a solution \(x\) can violate the following equality: 
+\[z_I = \prod_{v \in I}x_v\]
+We are thus interested in the following quantity, 
+\[\epsilon_I \coloneqq \sup_{(z_I,x) \in PrR} |z_I - \prod_{v \in I}x_v|
+\]
+To give a bound on the violation of the loop constraint.
+%
+We give a lower bound on \(\epsilon_I\):
 
-
-
-For the OPF model construction we the network as directed graph
-$(\boB,\boL)$ where $\boB$ is the set of Buses and and $\boL \subset \boB \times \boB$ is the 
-set of branches of the network and for each adjacent buses $k,m$ both $(k,m)$ and $(m,k)$ are
-in $\boL$. So the line $l$ adjacent to $k,m$ is modeled by two edges in the arc $\{(k,m),(m,k)\}$.
-$L$ can be partitioned in $\boL_0$ and $L_1$ with $|L_0|=|L_1|$ where every line $l$, adjacent 
-to the buses $k,m$ and with a transformer at $k$, is oriented so that $(k,m) \in L_0$ and 
-$(m,k) \in \boL_1$. We also consider a set $\boG$ of generators, partitioned into 
-(possibly empty) subsets $\boG_k$ for every bus $k \in \boB$.
-We consider the following convex Jabr relaxation of the OPF problem:
-\begin{align}
-  \label{Jabr equality model}
-  \inf_{\substack{P^G_g, Q^G_g, c_{km}, \\ s_{km}, S_{km}, P_{km}, Q_{km}}} & \opfcost(x) \coloneqq \sum_{g \in \mathcal{G}}{F_g(P_g^G)} \\
-  \text{Subject to:} & \; \forall km \in \boL \nonumber \\
-  & c_{km}^2 + s_{mk}^2 \leq c_{kk}c_{mm} \quad \text{Jabr constraint} \label{Jabr constraint}\\
-  & P_{km} = G_{kk}c_{kk}+G_{km}c_{km}+B_{km}s_{km} \label{c to P} \\
-  & Q_{km} = -B_{kk}c_{kk}-B_{km}c_{km}+G_{km}s_{km} \label{c to Q}\\
-  & S_{km} = P_{km} + jQ_{km} \label{PQ to S}\\
-  & \text{Power balance constraints:}\; \forall k \in \boB\nonumber \\
-  & \sum_{km \in L}S_{km}+P_k^L+iQ_k^L = \sum_{g \in \mathcal{G}(k)}{P_g^G} + i\sum_{g \in \mathcal{G}(k)}{Q_g^G} \label{constr: Power Flow Constraint J}\\
-  & \text{Power flow, Voltage, and Power generation limits:} \nonumber \\
-  & P_{km}^2 + Q_{km}^2 \leq U_{km} \label{Power Flow Magnitude Constraint J}\\
-  & V_k^{\text{min}^2} \leq c_{kk} \leq V_k^{\text{max}^2} \label{Voltage Magnitude Constraint J} \\
-  & P_g^{\text{min}} \leq P_g^G \leq P_g^{\text{max}}\label{Power generation Magnitude Constraint J} \\
-  &  c_{kk} \geq 0 \; \\
-  & V_k^{\text{max}} V_m^{\text{max}} \geq c_{km} \geq 0 \; \\ 
-  & - V_k^{\text{max}} V_m^{\text{max}} \leq s_{km} \leq V_k^{\text{max}} V_m^{\text{max}} \; \\
-  & c_{km} = c_{mk}, \;s_{km} = - s_{mk}.
-\end{align}
-
-This relaxation is in general not exact. We can recover exactness thanks to the following result:
+\newcommand{\convex}{\mathcal{C}}
 \begin{proposition}
-  Model \eqref{Jabr equality model} with the additional \emph{loop constraint} \eqref{loop constraint} for every loop in a cycle basis of \((\boB,\boL)\) is exact, we refer to this new model as the \emph{Exact Jabr formulation}
-
-  \begin{equation}
-    \label{loop constraint}
-    \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}=\prod_{k=1}^nc_{k_i,k_i}.
-  \end{equation}
+	\label{prop: error convexification}
+	Let \(I\) be a set of variables. Then
+	\[
+	  \epsilon_I \geq \sup_{(z_i,x) \in \convex{(Pr)}} |z_I - \prod_{v \in I}x_v| = U_I\left(\frac{1}{|I|}\right)^{\frac{1}{|I|-1}}\left(1 - \frac{1}{|I|}\right),
+	\]
+	where \(U_I \coloneqq \prod_{v \in I} \max(|u_v|,|l_v|)\).
+	\gr[]{mhhh se \(l_v\) è più grande di zero l'errore è più piccolo di così.}
   \end{proposition}
-
-In \textcolor{red}{cite}, auxiliary branches were added to the network, dividing each loop in smaller loops, to decrease the degree of the polynomials defining the loop constraint. Then Mc Cormick linearization was applied.
-The problem with this approach is that one exiliary branch is added for every branch in the loop.
-This result suggests the following approaches to either find a feasible solution or move along the space of feasible solutions.
-\begin{itemize}
-  \item Since the loop constraint is multilinear in it's variables, we can consider linear relaxations called \emph{Flower inequalities}, which generalize che classical Mc Cormick relaxations of products of variables. 
-  \item Such relaxation is exact on tree Networks (also known as radial networks). Our objective is, given a network \(\cN = (\boB,\boL)\) which can also not be a tree, consider a radial subnetwork \(\cN' = (\boB,\boL')\), with \(\boL' \subset \boL \) and consider the Jabr model  on \(\cN'\).
-  This solution is not necessarily feasible for the original problem \(\cN\), our objective is to iteratively recover a feasible solution for \(\cN\). 
-  \vspace{1cm}
-  Since the Jabr relaxation is exact on \(\cN'\) it follows that the constraints \ref{Jabr constraint} are respected, the constraints which are violated are the flow constraints on the leaves. We can try to recover feasibility my moving along the solution to the Jabr and Loop constraints.
-  \item Given a feasible solution, find feasible directions.
-\end{itemize}
-
-\section{Linearization of loop constraints}
-
-To find feasible relaxations of the loop constraint we follow \textcolor{red}{cite}. It must be noted that a major difference in our approach is that the OPF is not a multilinear optimization problem. So first we show that the same results in \textcolor{red}{cite} can be applied to the OPF.
-
-Consider a set of multilinear constraints:
-\begin{align}
-  \sum_{I \in \cI_j}c_I^j\prod_{v \in I_j} x_v \quad \forall I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \\
-  x_v \in [l_v,u_v] \quad \forall v \in V
-\end{align}
-Where \(V\) denotes the variables and \(\cI_j \in \cP(V)\), for \(j = 1,\ldots,m\) are the variables of the monomials appearing in the j-th homogenous constraint.
-A straight forward linearization is to introduce a variable \(z_I\) for every subset \(I\) of variables appearing in the constraints. Thus we obtain the following equivalent problem.
-
-\begin{align}
-  \sum_{I \in \cI_j}c_I^jz_I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \label{constr: linearized multilinear constraint} \\
-  z_I = \prod_{i \in I} x_i \quad \forall I \in \cE \coloneqq \cup_{j=1}^m I_j \\
-  x_v \in [l_v,u_v] \quad \forall v \in V
-\end{align}
-
-By affine afformation we can assume the variables \(x_v\) to be in the form \(c_v \in [0,1]\). Note that such affine transformations need to be handled with care, we will cover this in subsection \ref{subsection:Handling affine trasformations}.\
-Since contraint \eqref{constr: linearized multilinear constraint} is now linear, we are now interested in the linearization of the following set \(Pr \coloneqq  \{(x,z) \in [0,1]^V \times [0,1]^{\cE} \mid z_I = \prod_{i \in I} \forall I \in \cE\}\).
-If such constraints were the only ones, and if the cost was also multilinear, we would know that the solution would be on one of the vertices of the hypercube and the observation that follows would be trivially true. Since in the OPF the cost is not multilinear and there are other types of constraints we show that this is also a relaxation for \(Pr\).
-\begin{definition}[Standard form relaxation]\label{def: standard form relaxation}
-  Let the polyhedral \(PrR\) be defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4}.
-  \gr[]{fixalignment}
-  \begin{align}
-    z_I &\leq x_v   \quad\forall v \in I \in \cE \label{constr: PrR1} \\
-    z_I + \sum_{v \in I}(1-x_v) &\geq 1 \quad \forall I \in \cE \label{constr: PrR2}\\
-    z_I &\geq 0  \quad\forall I \in \cE \label{constr: PrR3}\\
-    x_v &\in [0,1]  \quad \forall v \in V \label{constr: PrR4}
-  \end{align}
-\end{definition}
-% \begin{proof}
-% \gr{This is actually much easier since by fixing all points except one we have an affine functions}
-% We need to show that every element \(x = (x_v,z_I)_{v \in V,I\in \cE} \in Pr\) satisfies constraints \eqref{constr: PrR1}-\eqref{constr: PrR4}.
-% Constraints \eqref{constr: PrR1}, \eqref{constr: PrR2}, \eqref{constr: PrR3} obviously hold. For constraint \eqref{constr: PrR2}, we see that for every choice of \(x_v \in [0,1], v \in I\), we have \(\prod_{v \in I} + \sum_{v \in I}(1-x_v) \geq 1\).
-% This is equivalent to showing that the function \( a(x_1,\ldots,x_n) \coloneqq \prod_{i = 1}^n x_i - \sum_{i=1}^nx_i + n -1 \geq 0\) on \([0,1]^n\).
-% This is trivially true for \(n = 1\). If \(n > 1 \), let \(HC \coloneqq [0,1]^n \) denote the hypercube, Let \(F_i \coloneqq \{x \in HC \mid x_i = 0\}\) and \(G_i \coloneqq \{x \in HC \mid x_i = 1\}\) denote the faces of the hypercube. We have that \[ HC = (HC \cap (F_1 + \langle e_1 - e_2\rangle)) \cup (HC \cap (G_2 + \langle e_1 - e_2\rangle)).\]
-% Thus it is sufficient to show that for every \(x \in F_1\) and \(y \in G_2\) the function \(f_x(u) \coloneqq a(x + u(e_2 - e_1))\) and the funciton \(g_y(v) \coloneqq a(y + v(e_1 - e_2))\) are non negative for all \(u \in [0,x_2]\) and \(v \in [x_1, 1]\) respectively. Expanding the expression of \(f_x\) we obtain:
-% \[
-% f_x(u) = a( u, x_2 - u, x_3, x_4, \ldots, x_n) = - u^2 \prod_{i=3}^nx_i + u \prod_{i=2}^nx_n - sum_{i=2}^nx_i + n - 1
-% \]
-% The second derivate of \(f_x(u)\) respect to \(u\) is thus \(f''_x(u) = -2 \prod_{i = 3} x_i \leq 0\) and is thus concave respect to \(v\). The value of \(f_x\) on the boundary points \(u =0,x_1\) is:
-% \begin{align}
-%   f_x(0) = a(0, x_2, \ldots, x_n) = \sum_{i=2}^nx_i + n - 1  \geq 0 \\
-%   f_x(x_2) = a(x_2, 0 , x_3, \ldots, x_n) = \prod_{i=2}^nx_i - \sum_{i=2}^nx_i + n - 2 \geq 0.
-% \end{align}
-% Where the second inequality is true by induction. Thus for every \(x \in F_1\) for every \(u \in [x_2,1]\) we have \(f_x \geq 0\).
-% Analogly we have that for every \(y \in G_2\) for every \(v \in [0,x_1]\) we have \(g_y \geq 0\). Thus for all \(x \in C\), \(a(x) \geq 0\) which concludes the proof. 
-% \end{proof}
-The corresponding Standard Form Relaxation for problem with homogeonus cost and constraints if often very weak. As done in \textcolor{red}{cite} we augment \ref{def: standard form relaxation} with \emph{Flower Inequalities}, which are additional inequalities valid for \(Pr\).
-Again the main difference with \textcolor{red}{cite: McCormick stikes back}, is that we cannot restict the hypercuber \(C\) to its vertices becase other point could also be optimal for the OPF problem. Se we check the additional flower inequalities are still valid for \(Pr\).
-
-\begin{definition}[extendend flower inequalities.]
-  Let \(I \in \cE\) and let \(J_1,\ldots,J_k \in \cE \cup \cS\) be such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) holds for \(i = 1,2,\ldots,k\). The \emph{extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) is defined as
-  \begin{equation}\label{constr: extended flower inequality}
-    z_I + \sum_{i=1}^k(1-z_{J_i}) \geq 1
-  \end{equation}
-  The extended flower relaxation \(FR \subset [0,1]^{\cE\cup\cS}\) are the elements \(x \in [0,1]^{\cE\cup\cS}\) for which all the extended flower inequalities hold.
-\end{definition}
-
-\begin{proposition}
-  For all \(x \in Pr\) and  \(I \in \cE\), \(J_1,\ldots,J_k \in \cE \cup \cS\) such that \(I \subset \bigcup_{i=1}^kJ_i\) and \(I \cap J_i \neq \emptyset\) for \(i = 1,2,\ldots,k\). Then \emph{extended flower inequality} \eqref{constr: extended flower inequality} with center \(I\) and petals \(J_1,\ldots,J_k\) holds for \(x\). In particular \(Pr \subset FR\).
-\end{proposition}
-\begin{proof}
-  For \(|I| = 1\) this is trivally true.
-  For \(|I| = n > 1\), wlog \(I = \{1,\ldots,n\}\). We want to see that for any \(x \in C_{\cup_kJ_k} \coloneqq [0,1]^{\cup_{k=1}^KJ_K}\) we have \(a(x) = \prod_{i \in I}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k}x_j) - 1 \geq 0\). Consider the face \(F = \{x \in [0,1]^{\cup_{k=1}^KJ_K} \mid x_1 = 0\}\). Then \(C_{\cup J_k} = C_{\cup J_k} \cap ( F + \langle e_1 \rangle)\).
-  Thus we only need to show that for every \(x \in F\) the function \(f_x(x_1) \coloneqq a(x + x_1e_1)\) is positive. This is an affine function, thus it sufficient to show that it is positive at \(x_1 = 0\) and \(x_1 = 1\). For \(x_1 = 0\) this is trivially true. For \(x_1 = 1\), we have \(f_x(1) = \prod_{i \in I\setminus\{1\}}x_i + \sum_{k=1}^K (1-\prod_{j \in J_k \setminus\{1\}}x_j) - 1 \geq 0\) by induction on \(|I|\).
-\end{proof}
-By taking \(J_i = \{x_i\}\) for all \(x_i \in I\), since \(z_{J_i} = x_i\), we have:
-\begin{corollary}
-  \gr[]{ok, to write better}
-  The \emph{standard form relaxation} as in defition \ref{def: standard form relaxation} is a relaxation of \(Pr\). That is \(Pr \subset PrR\).
-\end{corollary}
-
-\gr[inline]{Il resto del paper McCormick strikes back drovebbe valere anche qui, perchè parla della struttura dei rilassamenti, che non dipende da Pr.}
-
-\subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
-In the beginning of the sections, we assumed that the variables \(x_i \in [0,1]\) because affine transformation of homogenous constraints remain homogenous.But it must be noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given a monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
-Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
-
-\begin{observation}
-  \gr[inline]{add observation that they cannot be all positive or all negative. Can we also say something more? maybe not}
-\end{observation}
-
-Let \(C = \{k_1,\ldots, k_n\} \subset \boB \) be a cycle.
- The variables \(s_{h}\) are in the form \( s_{h} \in [-u_{s_h}, u_{s_h}]\) where \(h = (k_i,k_{i+1})\)  for all \(i = 1,\ldots,n\). We can then substitute \(s_{h}\) with \( u_h s'_h = s_h \) where
- \(s'_h \in [-1,1]\). 
-We then define the sign variables \(\sigma_h \in \{0,1\}\) for each \(h \in C\), where \(\sigma_h = 0\) if \(s_h\) is negative and \(1\) if it is positive.
-We can now rewrite the loop constraint as:
-
-% Then for each \(M \subset branches(C)\) we define the problem \(\cC(M)\) obtaining from the OPF problem by restricting the domain of 
-% \(s'_h\) variables to \(s'_h \in [-1,0]\) if \(h \in M\) and \(s'_h \in [0,1]\) if \(h \in M^c\). We observe that since the monomials appearing in each possible subproblem \(\cC(M)\) are the same, the flower inequalities are the same. The only constraint which is written differently is the loop constraint. Let \(\sigma_h^M \in \{-1,1\}\) be the variable which is equal to \(-1\) if \(h \in M\) and equal to \(0\) if \(h \in M^c\). Then the loop constraint associated to \(\cC(M)\) is 
-\begin{equation}
-  \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (\prod_{h \in A} (2\sigma_h-1) u_h) z_A=z'_C
-\end{equation}
-Where we substitute the monomial \(\prod_{h \in A}s_{k_hk_{h+1}}\prod_{h \in A^c}c_{k_hk_{h+1}}\) with \(z_A\) and the product 
-\(\prod_{k=1}^nc_{k_i,k_i}\) with \(z'_C\). For each even subset \(A \subset [n]\) we introduce the binary variable \(\lambda_A \in \{0,1\}\) which is \(0\) if \(\prod_{h \in A} (2\sigma_h-1)\) is \(-1\) and \(\lambda_A = 1\) otherwise.
-The loop constraint becomes:
-\begin{equation}
-  \sum_{k = 0}^{\lfloor n/2 \rfloor}\sum_{\substack{A \subset [n]\\|A|=2k}}(-1)^k (2\lambda_A - 1)U_A z_A=z'_C
-\end{equation}
-The product \( \lambda_Az_A\) can easily be linearized. To enforce the relation  \(2\lambda_A - 1 = \prod_{h \in A}(2\delta_h -1)\), simply note that \(\lambda_A = 0\) if and only if there is an odd number of \(\delta_h\) equal to \(0\), that is, there exists \(m_A \in \integers \) such that:
-\begin{equation}
-  \lambda_A + 2m_{A} = \sum_{h \in A} \delta_h 
-\end{equation}
-\gr[]{In realtà questo non è specifico all'OPF, va bene per tutti i vincoli omogenei e si può fare al posto di fare le trasformazioni affini! }
-
-% The parameters \(\lambda_A^M\) fully capture the differences between the loop constraints in the various \(\cC(M)\).
-% We consider these subproblems as a unique MILP problem the following way:
-% We introduce a binary variable \(delta_h \in \{0,1\}\) for each \(h \in branches(C)\) which correspond to the sign of \(s_h\) for all \(h \in branches(C)\).
-
-
-% Now, we can either solve all the subproblems in parallel and take the minimum or consider an associated MILP formulation by:
-% \begin{enumerate}
-%   \item Add one binary variable of each addend, that is more or less\( 2^C/2\)  + some binding constraints for the signs (which might be the same as the extended flower constraints) constraints: \gr[inline]{Question: given the loop constraint, if I randomly choose the signs of the monomials is it always one of the subproblems or is there one for which this isn't the case? Probably the latter since the number os subproblems is \(2^n\) while the number of possible signs is the number of addents in the sum which is much larger.}
-%   Now let's consider \(\lambda_A^M\) as binary variables. We want to linearize the product \(\lambda_A^M z_A\), we "can assume" \(\lambda_A^M\) to be binary. We can then linearize the product \(\lambda_A^M z_A\).
-%   \item Add one binary for each possible A (that is \(2^C\) variables) + \(2*2^C\) constraints
-% \end{enumerate}
-
-
-
-
-
-\section{Feasible directions}
-
-Let \(x_0 = (P_0,Q_0,c_0,s_0)\) be a feasible solution of the OPF problem \eqref{Jabr equality model} with the loop constraints \eqref{loop constraint}.
-We want to find feasible directions \(x_0 = (\stP,\stQ,\stc,\sts)\), that is such that \(x_1 = (P_0+\stP,Q_0+\stQ,c_0+\stc)\) is still a feasible solution of the OPF problem.
-We consider each constraint of the Exact Jabr Formulation separately do get feasible directions.
-
-\subsection{Jabr Constraint}
-
-Since \(x_0\), the jabr equality holds: \(c_{ii}c_{jj}= c_{ij}^2+s_{ij}^2\).
-Adding the movement \(\st\) we want that \((c_{ii}+\stc_{ii})(c_jj+\stc_{jj}) = (c_{ij}+\stc_{ij})^2+(s_{ij}+\sts_{ij})^2\). By expanding the terms and considering that the equality holds for \(x_0\) this is equivalent to:
-\begin{equation}
-  \stc_{ii}\stc_{jj}+2c_{ii}\stc_{jj}+2\stc_{ii}c_{jj}= \stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}
-\end{equation}
-For now we consider movements where \(\stc_{ii}\) is not zero only on an independent set of nodes in the graph, this way the constraint simplifies to: 
-\begin{equation}
-  \stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj} = 0 
-\end{equation}
-The solutions to this constraint can be found by minimizing the following minimization problem:
-\begin{equation}
-  \min  (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2
-\end{equation}
-Which can be solved by gradient descent methods. Since we want to solve this for all \((i,j)\in \boL\), we instead solve the following:
-\begin{equation}
-  \min  CJ(\stc,ds,\stP) = \sum_{(i,j)\in \boL} (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2
-\end{equation}
-\gr[inline]{Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}
-
-
-\subsection{Loop Constraints}
-Unfortunately, the number of monomials to computer for checking the various of loop constraints grows factorially with the length of the cycle. Thus trying to apply a similar method to find feasible directions satisfying the loop constraints as we did for the Jabr constraints would be computationally intractable.
-We can try the following approaches:
-\begin{itemize}
-  \item \textcolor{gray}{Find the cycle basis with minimal weight}
-  \item Each cycle can be broken down by adding auxiliary edges in the Network, decomposing each loop constraints in loop contraints associated to cycle of the desired length. For each auxiliary edge \(e = (e_0,e_1)\) we add the auxiliary variable \(c_e,s_e\), the associated Jabr constraints: \(c_e^2 + s_e^2 = c_{e_0}c_{e_1}\). We can now divide the cycles containing \(e_0\) and \(e_1\) in two cycles containing the edge \(e\) and thus obtaining smaller associated loop contraints.
-  \item Loop constraints of cycles of length equal to 3 or 4 can be rewritten as 2 polynomial constraints of degree 2.
   
-\end{itemize}
-
-Let us consider the loop constraints on the following cycle:
-\NewAdigraph{threecycle}{
-  1:2;
-  2:2;
-  3:2;
-}{
-  1,2;
-  2,3;
-  3,1;
-}[-]
-\begin{center}
-
-\threecycle{}
-\end{center}
-This corresponds to the following polynomial constraints:
-\begin{equation}
-  p_3 \coloneqq c_{12}(c_{23}c_{31} - s_{23}s_{31})-s_{12}(s_{23}c_{31}+c_{23}s_{31})-c_{11}c_{22}c_{33}
-\end{equation}
-We also define the following polynomials associated to the Jabr constraints at each edge:
-\begin{equation}
-  p_{ij} \coloneqq c_{ij}^2+s_{ij}^2-c_{ii}c_{jj}
-\end{equation}
-and
+  \begin{proof}
+  We start with the case where \(l_v = 0\). It can be easily (?) shown that the point which achieves the supremum is of the type \((z_I, tu_{v_1},\ldots, tu_{v_k},\ldots)\), where \(k = |I|\),
+  with \(z_I = t\prod_{v \in I}u_v\). Thus, we calculate:
+  \[
+  \sup_{t \in [0,1]} t\prod_{v \in I}u_v - \prod_{v \in I}tu_v = \sup_{t \in [0,1]} \prod_{v \in I}u_v(t - t^k).
+  \]
+  The supremum is attained at \(t = \left(\frac{1}{|I|}\right)^{\frac{1}{|I|-1}}\), and thus the error is \[\prod_{v \in I}u_v\left(\frac{1}{|I|}\right)^{\frac{1}{|I|}}\left(1 - \frac{1}{|I|}\right)\].
+  
+  In general, for \(l_v\) possibly negative, we observe that the relaxation introduced in Section \textcolor{green}{ref} is not convex. However, if restricted to each quadrant, it is convex, and we can apply the same argument. The error is then larger than the maximum error of the convexification of the graph of the monomial over each quadrant, and thus the thesis follows.
+  \end{proof}
+  
+  We now consider how the error on the monomial approximation influences the error on the loop constraint:
 \begin{align}
-  q_3^1 &= s_{12}c_{33} + c_{23}s_{31} + s_{23}c_{31} \label{constr: loop decomposition 1}\\
-  d_3^2 &= c_{12}c_{33} + c_{23}c_{31} + s_{23}s_{31} \label{constr: loop decomposition 2}
-\end{align}
-Then, we have the following results which let's us to rewrite the constraints associated to a cycle of length three as two polynomial constraints of degree 2.
-\begin{proposition}
-  \begin{equation}
-    \{(c,s)\mid p_3 = p_{12} = p_{23} = p_{31} = 0\} = \{(c,s)\mid q_3^1 = q_3^2 = p_{12} = p_{23} = p_{31} = 0\} 
-  \end{equation}
-\end{proposition}
-
-If we don't restrict the possible direction \(\st=(d_c,d_s,d_P)\), imposing that constraints \eqref{constr: loop decomposition 1}, \eqref{constr: loop decomposition 2} hold for \(x + \st\) would impose polynomial constraints on \(\st\).
-Alternatively, since  for example \(q_3^1\) is a bilinear polynomial respect to the vectors \(v_1=(s_{12}, c_{23}, s_{23})\) and \(v_2=(c_{33}, s_{31}, c_{31})\), we can fix the variables in \(v_2\), that is \(dv_2 = 0\) and move along \(v_1\).
-This way constraint \(q_3^1=0\) imposes a linear constraint on \(d_x\). 
-We can proceed on a similar way for \(q_3^2\). We note that one can consider instead to move along \(v_2\) and that there are other possible choices for \(v_1\) and \(v_2\). 
-\gr[inline]{The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}
-\gr[inline]{TODO: think well about possible directions}
-
-\subsection{Flow constraints}
-The flow constraint \eqref{constr: Power Flow Constraint J} also induce linear constraints on the step \(\st\):
-\begin{align}
-  \stP_{km} &= G_{kk}\stc_{kk}+G_{km}\stc_{km}+B_{km}\sts_{km}\\
-  \stQ_{km} &= -B_{kk}\stc_{kk}-B_{km}\stc_{km}+G_{km}\sts_{km} \\
-  \stS_{km} &= \stP_{km} + j\stQ_{km} \\
-  \sum_{km \in L}\stS_{km}+\stP_k^L+i\stQ_k^L &= \sum_{g \in \mathcal{G}(k)}{\stP_g^G} + i\sum_{g \in \mathcal{G}(k)}{\stQ_g^G} \label{Power Flow Constraint J} 
+	\epsilon_C &\coloneqq | \prod_{v \in V}c_{vv}- \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}(-1)^k\prod_{e \in A}c_{e}\prod_{e \in A^c}s_e|\\
+	& \leq  |z^v_C + \epsilon^v_{C}+ \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}z_A + \epsilon_A|\\
+	& \leq  |\prod_{v \in V}\epsilon^v_{C}|+ \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}|\epsilon_A| \\
+	& \leq \overline{\epsilon}_C + \sum_{k=0}^{\lfloor\frac{|C|}{2}\rfloor}\sum_{\substack{A \subset \cE(C) \\ |A| = 2k}}\overline{\epsilon}_C \cong 2^{|C|-1}\overline{\epsilon}_C
 \end{align}
 
+As done in \textcolor{green}{cite}, cycles can be decomposed into cycles of length 3 or 4 (resulting in McCormick relaxations of binomial), 
+or larger cycles (resulting in generalized monomial relxations).
+%
+We determine the optimal length subcycle length to minimize the loop constraint violation.
+%
+To do this, given the constraints induced by the subcycles of \(C\) we relate these to the loop constraint over \(C\) to confront the error.
+%
+First, given \(C\), decomposed in the cycles \(C_0,\ldots,C_k\), let \(\epsilon_{C_i}\) be the loop constraint violation over the subcycle \(C_i\), and let \(\epsilon^{s}_{C_i}\) be the constraint violation respect to the constraint \(\prod_{v \in C_i} \sin(\sum_{e \in \cE(C_i)}\theta_e) = 0\).
+Lastly, we denote by \(LHS^{c}_{C_i}\) (resp. \(RHS^{s}_{C_i}\)) the left hand side (right hand side) of the constraint \(\prod_{v \in C_i}c_{vv}\cos(\sum_{e \in \cE(C_i)}\theta_e) = \prod_{v \in C_i}c_{vv}\).
+Consider:
+\[
+\prod_{v \in C}c_{vv}\cos(\sum_{e \in \cE(C)}\theta_e) = \prod_{v \in C}c_{vv}
+\]
+By expanding the cosine, and substituting \(\cos(\theta_e)|V_{e_0}||V_{e_1}|\) and  \(\sin(\theta_e)|V_{e_0}||V_{e_1}|\), by \(c_{e}\) and \(s_e\) respectively, we obtain the loop constraint.
+Alternatively, observe that:
+\[
+\cos(\sum_{e \in \cE(C)} \theta_e) = \cos(\sum_{i = 0}^k \sum_{e \in C_i}\theta_e) = \cos(\sum_{i = 0}^k \theta_{C_i})
+\]
+Where \(\theta_{C_i} \coloneqq \sum_{e \in C_i}\theta_e\). 
+%
+Thus, by expanding the last sum respect to the angles \(\theta_{C_i}\) 
+and multiplying by \(\prod_{i=0}^k\prod_{v \in C_i}c_{vv}\), 
+we obtain the loop constraint expressed respect in function of the LHS of the loop constraints of the subcycles:
+\[
+\sum_{h=0}^{\lfloor\frac{k}{2}\rfloor}(-1)^h\sum_{\substack{A \subset [k] \\ |A| = 2h}}\prod_{i \in A}LHS^{c}_{C_i}\prod_{i \in A^c}LHS^{s}_{C_i} = \prod_{i=0}^k\prod{v\in C_i}c_{vv}
+\]
+Observe that \(LHS^c_{C_i} = RHS^C_{C_i} + \epsilon^s_{C_i}\) and \(LHS^s_{C_i} = \epsilon^s_{C_i}\), and that dividing by \(\prod_{i = 0}^k c_{v_i,v_i}\) we obtain the expression of the loop constraint over \(C\).
+Thus:
+\[
+\frac{1}{\prod_{i = 0}^k c_{v_i,v_i}}\sum_{h=0}^{\lfloor\frac{k}{2}\rfloor}(-1)^h\sum_{\substack{A \subset [k] \\ |A| = 2h}}\prod_{i \in A}(RHS^{c}_{C_i}+ \epsilon_{C_i})\prod_{i \in A^c}\epsilon^s_{C_i}) = RHS_{C}
+\]
+This sum can be divided in two sums, one corresponding to the left hand side of the loop constraint over \(C\),  and the other corresponding to the loop constraint violation, depending on \(\epsilon^c\) and \(\epsilon^s\).
+%
+By taking the absolute values, we obtain:
+\[
+\epsilon_C \leq 2^{|k|-1} \overline{\epsilon}_{C}^A
+\]
+Where \(\overline{\epsilon}_{C}^A\) is the average of the products in the sum. Then, since \(k = |C|/c\), where \(c = |C_i|\) the optimal length of the subcycles is \textcolor{red}{\(c = {42*y}\) with \(y\) to be determined}.
+\textcolor{red}{MHHHHH va scritto meglio}
+\printthis[false]{
+\section{Feasible directions}
+	
+	Let \(x_0 = (P_0,Q_0,c_0,s_0)\) be a feasible solution of the OPF problem \eqref{Jabr equality model} with the loop constraints \eqref{loop constraint}.
+	We want to find feasible directions \(x_0 = (\stP,\stQ,\stc,\sts)\), that is such that \(x_1 = (P_0+\stP,Q_0+\stQ,c_0+\stc)\) is still a feasible solution of the OPF problem.
+	We consider each constraint of the Exact Jabr Formulation separately do get feasible directions.
+	
+	\subsection{Jabr Constraint}
+	
+	Since \(x_0\), the jabr equality holds: \(c_{ii}c_{jj}= c_{ij}^2+s_{ij}^2\).
+	Adding the movement \(\st\) we want that \((c_{ii}+\stc_{ii})(c_jj+\stc_{jj}) = (c_{ij}+\stc_{ij})^2+(s_{ij}+\sts_{ij})^2\). By expanding the terms and considering that the equality holds for \(x_0\) this is equivalent to:
+	\begin{equation}
+		\stc_{ii}\stc_{jj}+2c_{ii}\stc_{jj}+2\stc_{ii}c_{jj}= \stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}
+	\end{equation}
+	For now we consider movements where \(\stc_{ii}\) is not zero only on an independent set of nodes in the graph, this way the constraint simplifies to: 
+	\begin{equation}
+		\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj} = 0 
+	\end{equation}
+	The solutions to this constraint can be found by minimizing the following minimization problem:
+	\begin{equation}
+		\min  (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2
+	\end{equation}
+	Which can be solved by gradient descent methods. Since we want to solve this for all \((i,j)\in \boL\), we instead solve the following:
+	\begin{equation}
+		\min  CJ(\stc,ds,\stP) = \sum_{(i,j)\in \boL} (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2
+	\end{equation}
+	\gr[inline]{Anche questo può essere risolto con metodo gradiente? Sappiamo che il minimo globale è zero, ma possono esserci minimi locali? Dobbiamo per forze imporre gli spostamenti solo su nodi indipendenti?}
+	
+	
+	\subsection{Loop Constraints}
+	Unfortunately, the number of monomials to computer for checking the various of loop constraints grows factorially with the length of the cycle. Thus trying to apply a similar method to find feasible directions satisfying the loop constraints as we did for the Jabr constraints would be computationally intractable.
+	We can try the following approaches:
+	\begin{itemize}
+		\item \textcolor{gray}{Find the cycle basis with minimal weight}
+		\item Each cycle can be broken down by adding auxiliary edges in the Network, decomposing each loop constraints in loop contraints associated to cycle of the desired length. For each auxiliary edge \(e = (e_0,e_1)\) we add the auxiliary variable \(c_e,s_e\), the associated Jabr constraints: \(c_e^2 + s_e^2 = c_{e_0}c_{e_1}\). We can now divide the cycles containing \(e_0\) and \(e_1\) in two cycles containing the edge \(e\) and thus obtaining smaller associated loop contraints.
+		\item Loop constraints of cycles of length equal to 3 or 4 can be rewritten as 2 polynomial constraints of degree 2.
+		
+	\end{itemize}
+	
+	Let us consider the loop constraints on the following cycle:
+	\NewAdigraph{threecycle}{
+		1:2;
+		2:2;
+		3:2;
+	}{
+		1,2;
+		2,3;
+		3,1;
+	}[-]
+	\begin{center}
+		
+		\threecycle{}
+	\end{center}
+	This corresponds to the following polynomial constraints:
+	\begin{equation}
+		p_3 \coloneqq c_{12}(c_{23}c_{31} - s_{23}s_{31})-s_{12}(s_{23}c_{31}+c_{23}s_{31})-c_{11}c_{22}c_{33}
+	\end{equation}
+	We also define the following polynomials associated to the Jabr constraints at each edge:
+	\begin{equation}
+		p_{ij} \coloneqq c_{ij}^2+s_{ij}^2-c_{ii}c_{jj}
+	\end{equation}
+	and
+	\begin{align}
+		q_3^1 &= s_{12}c_{33} + c_{23}s_{31} + s_{23}c_{31} \label{constr: loop decomposition 1}\\
+		d_3^2 &= c_{12}c_{33} + c_{23}c_{31} + s_{23}s_{31} \label{constr: loop decomposition 2}
+	\end{align}
+	Then, we have the following results which let's us to rewrite the constraints associated to a cycle of length three as two polynomial constraints of degree 2.
+	\begin{proposition}
+		\begin{equation}
+			\{(c,s)\mid p_3 = p_{12} = p_{23} = p_{31} = 0\} = \{(c,s)\mid q_3^1 = q_3^2 = p_{12} = p_{23} = p_{31} = 0\} 
+		\end{equation}
+	\end{proposition}
+	
+	If we don't restrict the possible direction \(\st=(d_c,d_s,d_P)\), imposing that constraints \eqref{constr: loop decomposition 1}, \eqref{constr: loop decomposition 2} hold for \(x + \st\) would impose polynomial constraints on \(\st\).
+	Alternatively, since  for example \(q_3^1\) is a bilinear polynomial respect to the vectors \(v_1=(s_{12}, c_{23}, s_{23})\) and \(v_2=(c_{33}, s_{31}, c_{31})\), we can fix the variables in \(v_2\), that is \(dv_2 = 0\) and move along \(v_1\).
+	This way constraint \(q_3^1=0\) imposes a linear constraint on \(d_x\). 
+	We can proceed on a similar way for \(q_3^2\). We note that one can consider instead to move along \(v_2\) and that there are other possible choices for \(v_1\) and \(v_2\). 
+	\gr[inline]{The hope is that even though we are restricting the directions for a single step, that by concatenating steps we can obtain a "good" amount of feasible directions.}
+	\gr[inline]{TODO: think well about possible directions}
+	
+	\subsection{Flow constraints}
+	The flow constraint \eqref{constr: Power Flow Constraint J} also induce linear constraints on the step \(\st\):
+	\begin{align}
+		\stP_{km} &= G_{kk}\stc_{kk}+G_{km}\stc_{km}+B_{km}\sts_{km}\\
+		\stQ_{km} &= -B_{kk}\stc_{kk}-B_{km}\stc_{km}+G_{km}\sts_{km} \\
+		\stS_{km} &= \stP_{km} + j\stQ_{km} \\
+		\sum_{km \in L}\stS_{km}+\stP_k^L+i\stQ_k^L &= \sum_{g \in \mathcal{G}(k)}{\stP_g^G} + i\sum_{g \in \mathcal{G}(k)}{\stQ_g^G} \label{Power Flow Constraint J} 
+	\end{align}
 
-\subsection{Other constraints}
-Magnitude constraints are what limit the step size:
-\begin{align}
-  V_k^{\text{min}^2} \leq c_{kk} + \stc_{kk} \leq V_k^{\text{max}^2}  \\
-  P_g^{\text{min}} \leq P_g^G + \stP_g^G\leq P_g^{\text{max}}\\\
-  c_{kk} + \stc_{kk} \geq 0 \;
-\end{align}
-\gr[inline]{what about this one?}
-\begin{equation*}
-  P_{km}^2 + Q_{km}^2 \leq U_{km}
-\end{equation*}
-
-\subsection{Step Problem}
-Combining the considerations in the previous subsections we obtaing the following problem to calculate a feasible step.
-Where given a graph, we find a cycle basis, we decompose each cycle in a 3/4-cycles, for each of these smaller cycles we consider their loop constraints and pick \gr[]{how?} which variables do move in the step \(\st\).
-\gr[inline]{Da riscrivere meglio, i vincoli su \(q_e^1,q_e^2\) sono per ciascun arco in un ciclo in una base di cicli, ma se lo stesso arco è in due basi di cicli diverse, se i due cicli non hanno nodi in comune allora sono due vincoli diversi}
-
-\begin{align}
-  \label{prob: Step Problem}
-  \min  CJ(\st) = & sum_{(i,j)\in \boL} (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2 \\
-  \text{Subject to:} \nonumber & \\
-  q_e^1 &= \sts_{12}c_{33} + \stc_{23}s_{31} + \sts_{23}c_{31}\\
-  q_e^2 &= \stc_{12}c_{33} + \stc_{23}c_{31} + \sts_{23}s_{31} \\
-  \stP_{km} &= G_{kk}\stc_{kk}+G_{km}\stc_{km}+B_{km}\sts_{km}\\
-  \stQ_{km} &= -B_{kk}\stc_{kk}-B_{km}\stc_{km}+G_{km}\sts_{km} \\
-  \stS_{km} &= \stP_{km} + j\stQ_{km} \\
-  \sum_{km \in L}\stS_{km} &= \sum_{g \in \mathcal{G}(k)}{\stP_g^G} + i\sum_{g \in \mathcal{G}(k)}{\stQ_g^G} \\
-  &V_k^{\text{min}^2} \leq c_{kk} + \stc_{kk} \leq V_k^{\text{max}^2}  \\
-  &P_g^{\text{min}} \leq P_g^G + \stP_g^G\leq P_g^{\text{max}}\\\
-  &c_{kk} + \stc_{kk} \geq 0 \;
-\end{align}
-
-If the optimal solutions of problem \eqref{prob: Step Problem} are feasible steps if and only if their cost is 0. 
-Leaven like this one obvious solution is \(dx = 0\). Possible ideas.
-\begin{itemize}
-  \item Impose that the generation cost must decrease, by putting the scalar product of \(\st\) with the gradient of the cost function \(\opfcost\) in \(x\) to be smaller than 0. \(\st \nabla F(x) < 0 \). With this additional constraint if it's an equality then the family of the possible direction doesn't have a decreasing cost direction.
-\end{itemize}
-Since the constraints are affine, problem \eqref{prob: Step Problem} can be solved with a projected gradient descent algorithm.
-\gr[]{If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}
-
-
+  	
+	\subsection{Other constraints}
+	Magnitude constraints are what limit the step size:
+	\begin{align}
+		V_k^{\text{min}^2} \leq c_{kk} + \stc_{kk} \leq V_k^{\text{max}^2}  \\
+		P_g^{\text{min}} \leq P_g^G + \stP_g^G\leq P_g^{\text{max}}\\\
+		c_{kk} + \stc_{kk} \geq 0 \;
+	\end{align}
+	\gr[inline]{what about this one?}
+	\begin{equation*}
+		P_{km}^2 + Q_{km}^2 \leq U_{km}
+	\end{equation*}
+	
+	\subsection{Step Problem}
+	Combining the considerations in the previous subsections we obtaing the following problem to calculate a feasible step.
+	Where given a graph, we find a cycle basis, we decompose each cycle in a 3/4-cycles, for each of these smaller cycles we consider their loop constraints and pick \gr[]{how?} which variables do move in the step \(\st\).
+	\gr[inline]{Da riscrivere meglio, i vincoli su \(q_e^1,q_e^2\) sono per ciascun arco in un ciclo in una base di cicli, ma se lo stesso arco è in due basi di cicli diverse, se i due cicli non hanno nodi in comune allora sono due vincoli diversi}
+	
+	\begin{align}
+		\label{prob: Step Problem}
+		\min  CJ(\st) = & sum_{(i,j)\in \boL} (\stc_{ij}^2+c_{ij}\stc_{ij}+\sts_{ij}^2+s_{ij}\sts_{ij}-2\stc_{ii}c_{jj})^2 \\
+		\text{Subject to:} \nonumber & \\
+		q_e^1 &= \sts_{12}c_{33} + \stc_{23}s_{31} + \sts_{23}c_{31}\\
+		q_e^2 &= \stc_{12}c_{33} + \stc_{23}c_{31} + \sts_{23}s_{31} \\
+		\stP_{km} &= G_{kk}\stc_{kk}+G_{km}\stc_{km}+B_{km}\sts_{km}\\
+		\stQ_{km} &= -B_{kk}\stc_{kk}-B_{km}\stc_{km}+G_{km}\sts_{km} \\
+		\stS_{km} &= \stP_{km} + j\stQ_{km} \\
+		\sum_{km \in L}\stS_{km} &= \sum_{g \in \mathcal{G}(k)}{\stP_g^G} + i\sum_{g \in \mathcal{G}(k)}{\stQ_g^G} \\
+		&V_k^{\text{min}^2} \leq c_{kk} + \stc_{kk} \leq V_k^{\text{max}^2}  \\
+		&P_g^{\text{min}} \leq P_g^G + \stP_g^G\leq P_g^{\text{max}}\\\
+		&c_{kk} + \stc_{kk} \geq 0 \;
+	\end{align}
+	
+	If the optimal solutions of problem \eqref{prob: Step Problem} are feasible steps if and only if their cost is 0. 
+	Leaven like this one obvious solution is \(dx = 0\). Possible ideas.
+	\begin{itemize}
+		\item Impose that the generation cost must decrease, by putting the scalar product of \(\st\) with the gradient of the cost function \(\opfcost\) in \(x\) to be smaller than 0. \(\st \nabla F(x) < 0 \). With this additional constraint if it's an equality then the family of the possible direction doesn't have a decreasing cost direction.
+	\end{itemize}
+	Since the constraints are affine, problem \eqref{prob: Step Problem} can be solved with a projected gradient descent algorithm.
+	\gr[]{If we don't consider magnitude constraints, we can consider directly the projection of the gradient on the subspace of feasible solutions, this would be easier than considering the projection on a generic poligon (I think)}
+	
+	\newpage
+}
 \end{document}

@@ -58,9 +58,11 @@ def create_admittance_matrix(case, branch):
         
     return G,B
 
-case = datasets.load_opf_example("case14")
+case = datasets.load_opf_example("case57")
+#import scipy.io
+#case= scipy.io.loadmat('./case302.mat')
 #%% true result
-# result = opf.solve_opf(case, opftype="AC")
+result = opf.solve_opf(case, opftype="AC")
 
 
 
