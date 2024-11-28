@@ -31,6 +31,8 @@
 
 
 \newcommand{\nc}{\newcommand}
+
+
 \nc{\st}{dx} %step symbols
 \nc{\stc}{dc}
 \nc{\sts}{ds}
@@ -336,6 +338,70 @@
 		Note that, with the same notation of the proof above, \eqref{eq:ineq-lb} is tight for every vertex of \(\mathfrak{C}\) for which \(|I_1| \leq 1\).
 	\end{observation}
 
+\subsection{A new(?) class of contraints}
+\newcommand{\aop}{a^{\text{op}}}
+\newcommand{\prodset}{Pr}
+\newcommand{\pisum}[1]{\prod_{v \in I\setminus{\{#1\}}}a_v (\aop_{#1}-a_{#1})}
+We now consider when, given a vertex \(a\) of the cuboid \(\mathfrak{C}\), we can define a separating hyperplane \(\pi\) for \(\prodset\), that is, when \(\pi: \mathbb{R}^n \to \mathbb{R}\)
+such that either \(\pi(x) \leq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\) for all \(x\) in the vertex or \(\pi(x) \geq \prod_{v \in I}x_v\)
+for all \(x\) in \(\mathfrak{C}\). Furthermore, we want a good cut, so we look for hyperplanes such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\). 
+%
+In this section we denote the vertex opposite to \(a\), \(\aop\). Choosing a vertex, corresponds to picking for each interval \(v \in I\), 
+either the lower bound or the upper bound, so \(\aop\) is the vertex having as \(\aop_v = l_v\) if \(a_v = u_v\) and \(\aop_v = u_v\) otherwise.
+%
+First we observe that since in \(\mathbb{R}^{n+1}\) fixed \(n+1\) affinely independent points there exists a unique hyperplane containing all these points, then there exists a unique hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\) and for \(y = x\).
+\begin{observation}
+	The hyperplane \(\pi(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v a_v(x_v - a_v)\), where \(C_v \coloneqq \prod_{v' \in I \setminus \{v\}}\), is the only hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\).
+\end{observation}
+%
+We now look for conditions for when this uniquely defined hyperplane is also a separating hyperplane for \(\prodset\).
+%
+\begin{theorem}
+	\label{thm: supportinghyperplane}
+	Let \(a\) be a vertex of \(\mathfrak{C}\), let \(I\) be the set of variables adjacent to \(a\) and let \(\aop\) be the vertex opposite to \(a\). Then the hyperplane \(\pi(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v a_v(x_v - a_v)\) is a separating hyperplane for \(\prodset\) if one of the following two conditions hold.
+	\begin{enumerate}
+		\item \label{cond:1} For all \(v \in I\), if \(a_v \geq 0\) then \(a_v = u_v\), otherwise \(a_v = l_v\).
+		\item \label{cond:2}For all \(v \in I\), if \(a_v \geq 0\) then \(a_v = l_v\), otherwise \(a_v = u_v\).
+	\end{enumerate}
+	If Condition \(1\) holds, then \(\pi(x) \geq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\). If Condition \(2\) holds, then \(\pi(x) \leq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\).
+\end{theorem}
+\begin{proof}{(to complete)}
+	We prove the theorem for \ref{cond:1}, since the product \(\prod_{v\in I}x_v\) is multilinear, it is sufficient to check that \(\pi(x) \geq \prod_{v \in I}x_v\)
+	when \(x\) is a vertex of \(\mathfrak{C}\). 
+	%
+	Consider the graph having as nodes the vertices of \(\mathfrak{C}\) and as arcs the edges of \(\mathfrak{C}\). We proceed by induction on the minimum distance \(d_H(x,a)\) on this graph of the vertix \(x\) from the vertix \(a\).
+	Since for \(k = 0\) and \(k=1\) this is true because the hyperplane is equal to the product of the variables in \(I\) by construction. 
+	%
+	We prove it for when \(k=3\) since it is known that when a statement is true for \(k=1,2,3\), then is true for all \(k\in \mathbb{N}\). 
+	%
+	We define \(d^i \in \mathbb{R}^n\) as \(d^i \coloneqq \aop_i - a\).
+	%
+	Then all the vertices with distance \(d_H(x,a) = 2\) can be written as \(x = a + d_i + d_j\) for some distinct \(i,j \in I\), to make explicit the dependence of the vertix from \(d_i\) and \(d_j\) we refer to \(x\) as \(x^{ij}\), we observe that the vertices \(x^{ij}\) and \(x^{ji}\) are the same. 
+	%
+	Thus we have that: 
+	\begin{equation}
+		\pi(x^{ij}) = \pi(a + d_i + d_j) = \prod_{v \in I}a_v + \pisum{i} + \pisum{j}.
+	\end{equation}
+	%
+	We want to prove that if \(\pi(x^{ij}) \geq \prod_{v \in I}x^{ij}\) (respectively \(\leq\)), then \(\pi(x^{hk}) \geq \prod_{v \in I}x^{hk}_v\) (\(\geq\) for all \(h,k \in I\).
+	%
+	Since \(x^{hk} = x^{kh}\) and by transitivity of this propriety we can restrict to the case where \(h = i\).
+	%
+	This is equivalent to proving that \((\pi(x^{ij}) - \prod_{v \in I}x^{ij}_v) (\pi(x^{ik}) - \prod_{v \in I}x^{ik}_v) \geq 0\).
+	%
+	We have that: 
+	\begin{align}
+		\pi(x^{ij}) - \prod_{v \in I}x^{ij}_v &= \left(a_i a_j + a_j (\aop_i - a_i) + a_i (\aop_j - a_j) - \aop_i \aop_j\right) \prod_{v \neq i,j} a_v \\
+		&= \left(-a_i a_j + a_i \aop_k - a_k \aop_i - \aop_k \aop_i\right) \prod_{v \neq i,j} a_v \\
+		&= \left(a_i (\aop_j - a_j) - \aop_i (\aop_j - a_j)\right) \prod_{v \neq i,j} a_v \\
+		&= (\aop_i - a_i) (\aop_j - a_j) \prod_{v \neq i,j} a_v
+	\end{align}
+	Thus:
+	\begin{align}
+	\pi(x^{ij}) - \prod_{v \in I}x^{ij}_v) (\pi(x^{ik}) - \prod_{v \in I}x^{ik}_v) = \\ (\aop_i - a_i)^2 (\aop_j - a_j) (\aop_k - a_k) \prod_{v \neq i,j} a_v^2 \geq 0.
+	\end{align}
+	The inequality holds and only if \( (\aop_j - a_j) (\aop_k - a_k) \geq 0\) for all \(i,j,k \in I\), this is true if either Condition \ref{cond:1} or Condition \ref{cond:2} hold.
+\end{proof}
 \section{Bounds on Loop constraints violation}
 We want to confront different possible relaxations in order to pick the one which minimizes the violation of the loop constraint.
 %
