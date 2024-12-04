@@ -137,12 +137,14 @@
 	\begin{definition}[Standard form relaxation]\label{def: standard form relaxation}
 		Let the polyhedral \(PrR\) be defined by the linear constraints  \eqref{constr: PrR1}-\eqref{constr: PrR4}.
 		\gr[]{fixalignment}
-		\begin{align}
-			z_I &\leq x_v   \quad\forall v \in I \in \cE \label{constr: PrR1} \\
-			z_I + \sum_{v \in I}(1-x_v) &\geq 1 \quad \forall I \in \cE \label{constr: PrR2}\\
-			z_I &\geq 0  \quad\forall I \in \cE \label{constr: PrR3}\\
-			x_v &\in [0,1]  \quad \forall v \in V \label{constr: PrR4}
-		\end{align}
+		\begin{subequations}
+			\begin{align}
+				z_I &\leq x_v    && \forall v \in I \in \cE \label{constr: PrR1} \\
+				z_I + \sum_{v \in I}(1-x_v) &\geq 1 &&  \forall I \in \cE \label{constr: PrR2}\\
+				z_I &\geq 0  && \forall I \in \cE \label{constr: PrR3}\\
+				x_v &\in [0,1]  && \forall v \in V \label{constr: PrR4}
+			\end{align}
+		\end{subequations}
 	\end{definition}
 	% \begin{proof}
 		% \gr{This is actually much easier since by fixing all points except one we have an affine functions}
@@ -308,7 +310,7 @@
 			& = ((-1)^{k_1}-1) \prod_{v \in J_1} l_v + 2k_1 + \prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) =  \\
 			& \geq ((-1)^{k_1}-1) \prod_{v \in J_1} l_v + 2k_1 + 1 \geq (-1)^{k_1} + 2k_1 \geq 1,
 		\end{align*}
-		where the first inequality holds because \(\prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) \geq 1\) because of the standard multilinear relaxation. \textcolor{red}{cita}, the second inequality holds because \(0 < l_v < 1\) and so \(0 < \prod_{v \in J_1} l_v < 1\), and the last inequality holds because \(k_1 \geq 0\) integer.
+		where the first inequality holds because \(\prod_{v \in J_1} l_v + \sum_{v \in J_1} (1 - l_v) \geq 1\) because of the standard multilinear relaxation. \textcolor{violet}{cita}, the second inequality holds because \(0 < l_v < 1\) and so \(0 \leq \prod_{v \in J_1} l_v < 1\), and the last inequality holds because \(k_1 \geq 0\) integer.
 %		We divide the proof in three cases, namely: \((i)\) \(K_1 = \emptyset \), \((ii)\) \(|K_1| \geq 2\) even, \((iii)\) \(|K_1| \) odd.
 %		\begin{itemize}
 %			\item[\((i)\)] \(K_1 = \emptyset \), for which we have
@@ -358,7 +360,7 @@ We now look for conditions for when this uniquely defined hyperplane is also a s
 %
 \begin{theorem}
 	\label{thm: supportinghyperplane}
-	Let \(a\) be a vertex of \(\mathfrak{C}\), let \(I\) be the set of variables adjacent to \(a\) and let \(\aop\) be the vertex opposite to \(a\). Then the hyperplane \(\pi(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v a_v(x_v - a_v)\) is a separating hyperplane for \(\prodset\) if one of the following two conditions hold.
+	Let \(a\) be a vertex of \(\mathfrak{C}\), let \(I\) \ambrogio{occhio che I è sempre stato il set di tutti gli indici, non vorrei ci confondessimo} be the set of variables adjacent to \(a\)  and let \(\aop\) be the vertex opposite to \(a\). Then the hyperplane \(\pi(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v a_v(x_v - a_v)\) is a separating hyperplane for \(\prodset\) if one of the following two conditions hold.
 	\begin{enumerate}
 		\item \label{cond:1} For all \(v \in I\), if \(a_v \geq 0\) then \(a_v = u_v\), otherwise \(a_v = l_v\).
 		\item \label{cond:2}For all \(v \in I\), if \(a_v \geq 0\) then \(a_v = l_v\), otherwise \(a_v = u_v\).
@@ -402,6 +404,29 @@ We now look for conditions for when this uniquely defined hyperplane is also a s
 	\end{align}
 	The inequality holds and only if \( (\aop_j - a_j) (\aop_k - a_k) \geq 0\) for all \(i,j,k \in I\), this is true if either Condition \ref{cond:1} or Condition \ref{cond:2} hold.
 \end{proof}
+
+\ambrogio{scrivo delle cose qui sotto che magari possono tornare utili}
+\begin{subequations}
+	\begin{align*}
+		f_a (x) &= \prod_{v \in I} x_v  + \sum_{v \in I}c_v (a_v - x_v) - \prod_{v \in I} a_v, \\
+		g_a (x) &= \prod_{v \in I} x_v  - \sum_{v \in I}c_v x_v
+	\end{align*}
+\end{subequations}
+we are looking for \(a \in \mathfrak{C}\) such that  either 
+\begin{subequations}
+	\begin{align*}
+		f_a(x) &\leq 0 & \forall x \in \mathfrak{C}, \text{ or}\\
+		f_a(x) &\geq 0 & \forall x \in \mathfrak{C},
+	\end{align*}
+\end{subequations}
+that is 
+\begin{subequations}
+	\begin{align*}
+		g_a(x) &\leq g_a(a), & \forall x \in \mathfrak{C}, \text{ or}\\
+		g_a(x) &\geq g_a(a), & \forall x \in \mathfrak{C}.
+	\end{align*}
+\end{subequations}
+So we are looking for \(a\) such that the function \(g_a\) attains its maximum or minimum at \(a\). Note that \(g_a(a) = (1 - |I|)\prod_{v \in I} a_v\). \ambrogio{quindi secondo me, col fatto che \(I \leq 2\), se \(|a_v| = u_v\) dovrebbe essere facile far vedere che quello è sempre il massimo o il minimo, dipende da quanti segni meno ci sono}
 \section{Bounds on Loop constraints violation}
 We want to confront different possible relaxations in order to pick the one which minimizes the violation of the loop constraint.
 %
