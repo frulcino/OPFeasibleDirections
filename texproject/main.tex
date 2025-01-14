@@ -366,11 +366,11 @@ We now look for conditions for when this uniquely defined hyperplane is also a s
 	\label{prop: sufficient and necessary sep hyperplane}
 	The hyperplane \(\pi_a\) is a separating hyperplane for \(\prodset\) if and only if either for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\), \(k = 1,\ldots,s-1\) and \(J_k \coloneqq \{j_1,\ldots,j_k\}\), the following holds:
 	\begin{equation}
-		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}{x^{J_k}_v}\right) (\aop_{j_s}-a_{j_s})\geq 0
+		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}{x^{J_k}_v}\right) (\aop_{j_s}-a_{j_s})\geq 0
 	\end{equation}
 	or for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\): 
 	\begin{equation}
-		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}x^{J_k}_v\right) (\aop_{j_s}-a_{j_s})\leq 0
+		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}x^{J_k}_v\right) (\aop_{j_s}-a_{j_s})\leq 0
 	\end{equation}
 	
 \end{proposition}
@@ -448,49 +448,55 @@ However, vertices at which the product \(\pi\) attains its maximum (or minimum) 
 	In all cases, the required inequality is satisfied. Hence, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, \(\pi_a\) is a separating hyperplane.
 	\end{proof}
 	
-We look for sufficient conditions for when if \(\pi_{\bar{a}}\) is a separating hyperplane, if \(a \in \mathfrak{C}\) is and adjacent vertex of \(a\), then also \(\pi_a\) is a separating hyperplane.
-Let \(d_j \coloneqq \bar{a}^{\text{op}}_j - \bar{a}_j \geq 0 \).
+We look for sufficient and necessary conditions for when if \(\pi_{\bar{a}}\) is a separating hyperplane, if \(a \in \mathfrak{C}\) is and adjacent vertex of \(a\), then also \(\pi_a\) is a separating hyperplane.
+
 
 \begin{proposition}
 	\label{prop: adjacent supporting hyperplanes}
-	If \(\bar{a}\) is an adjacent vertex of \(a\) and \(\pi_{\bar{a}}\) is a separating hyperplane for \(\prodset\), 
-	such that \(\pi_{\bar{a}}(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\), then \(\pi_a\) is also a separating hyperplane for \(\prodset\) such that \(\pi_{a}(x) \leq p(x)\) if and only if 
+	If \(a\) is an adjacent vertex of \(\bar{a}\) and \(\pi_{\bar{a}}\) is a separating hyperplane for \(\prodset\), 
+	such that \(\pi_{\bar{a}}(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\), let \(d_j \coloneqq \bar{a}^{\text{op}}_j - \bar{a}_j \geq 0 \) for all \(j\). Then \(\pi_a\) is also a separating hyperplane for \(\prodset\) such that \(\pi_{a}(x) \leq p(x)\) if and only if 
 	\begin{equation}
 		\label{eq: supporting hyperplane}
-		(p(\bar{a}+d_j) - p(\bar{a}))(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}) \geq 0 \text{ for all } j \in I\setminus{\bar{v}}.
+		C_v^ad_v \leq C_v^{\bar{a}}d_v \text{ for all } v \text{ in } J\setminus{\bar{v}}
 	\end{equation}
 	Conversely the proposition also works by changing the sign of all inequalities.
 \end{proposition}
 
 \begin{proof}
-	First we observe that \(p(\bar{a}) = p(a) - C_{\bar{v}}^ad_{\bar{v}}\), by definition of \(C_{\bar{v}}^a\).
+	Let \(\bar{v} \in [n]\) be such that \(\bar{a} - d_{\bar{v}} = a \).%
+	 First we observe that \(p(\bar{a}) = p(a) - C_{\bar{v}}^ad_{\bar{v}}\), by definition of \(C_{\bar{v}}^a\).
 	%
-	 Let \(x^J \coloneqq \bar{a} + \sum_{j\in J}d_j\). Then if \(\bar{v}\) is contained in \(J\), we have:
+	 Let \(x^J \coloneqq \bar{a} + \sum_{j\in J}d_j\).%
+	  Then if \(\bar{v}\) is contained in \(J\), we have:
 \begin{align}
 	\pi_a(x^J) &= p(a) + \sum_{j \in J \setminus{\bar{v}}} C_v^a  d_v\\
-	&= p(\bar{a}) + C_{\bar{v}}^ad_{\bar{v}} +  + \sum_{j \in J \setminus{\bar{v}}} C_v^a  d_v \label{eq: pc}
+	&= p(\bar{a}) + C_{\bar{v}}^ad_{\bar{v}} +  \sum_{j \in J \setminus{\bar{v}}} C_v^a  d_v \label{eq: pc} \\
+ &\leq p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +  \sum_{j \in J \setminus{\bar{v}}}  C_v^{\bar{a}}  d_v = \pi_{\bar{a}}(x^J) \leq p(x^J) 	\eqref{eq: pc}
 \end{align}
-Since \( C_{\bar{v}}^a = \prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j = C_{\bar{v}}^{\bar{a}}\), and 
- \[ C_{h}^a = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j =  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}C_{h}^{\bar{a}}.\]
- We have:
-\begin{equation}
-	\eqref{eq: pc} = p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +   \sum_{j \in J \setminus{\bar{v}}}  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} a_v d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
-\end{equation}
-Where the first inequality follows direclty from the hypothesis, since either of the two conditions imply that \( \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} \leq C_v^{\bar{v}}\) for all \(v\) in \(J\setminus{\bar{v}}\).
+Where the first inequality follows direclty from the hypothesis.
 Similarly the same is done when \(\bar{v} \notin J\):
 
 \begin{align}
 	\pi_a(x^J) &= p(a) - C_{\bar{v}}^ad_{\bar{v}}  + \sum_{j \in J} C_v d_v \\
 	&= p(\bar{a}) +  \sum_{j \in J } C_v^a d_v  \\
-	&= p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +  + \sum_{j \in J }  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
+	&\leq p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}}  + \sum_{j \in J }  C_v^{\bar{a}} d_v = \pi_{\bar{a}}(x^J) \leq p(x^J)
 \end{align}
-Thus \(\pi_{\bar{a}}\) is a separating hyperplane. Now we show that if the conditions doesn't hold than \(\pi_a\) is not a separating hyperplane.
-Consider \(v' \in I \setminus \bar{v}\) such that \(C_{v'}^{\bar{a}}d_{v'}(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}) \geq 0\), then we have:
+Thus \(\pi_{a}\) is a separating hyperplane. Now we show that if the conditions doesn't hold than \(\pi_a\) is not a separating hyperplane.
+Consider \(v' \in I \setminus \bar{v}\) such that \(C_v^ad_v \leq C_v^{\bar{a}}d_v > 0\), then we have:
 \begin{align}
-\pi_a(a - d_{\bar{v}} + d_{v'}) &= \pi_{\bar{a}} + C_{v'}^{a}d_{v'} =  \pi_{\bar{a}} + \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}C_{v'}^{\bar{a}}d_{v'} >
-\\&= p(\bar{a}) + C_{v'}^{\bar{a}}d_{v'} = p(\bar{a} + d_{v'})= p(a + d_{\bar{v}}+ d_{v'})
+\pi_a(a - d_{\bar{v}} + d_{v'}) &= \pi_{\bar{a}}(\bar{a}) + C_{v'}^{a}d_{v'} > p(\bar{a}) + C_{v'}^{\bar{a}}d_{v'} = 
+\\& = p(\bar{a} + d_{v'})= p(a - d_{\bar{v}}+ d_{v'})
 \end{align} 
 \end{proof}
+
+\begin{observation}
+	If \(\bar{a}_{\bar{v}}\neq 0\), Equation \eqref{eq: supporting hyperplane} is equivalent to \(\frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} = C_v^{a}\leq C_v^{\bar{a}} \text{ for all } v \text{ in } J\setminus{\bar{v}}.\)
+\end{observation}
+\begin{proof}
+Since \( C_{\bar{v}}^a = \prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j = C_{\bar{v}}^{\bar{a}}\), and 
+ \[ C_{h}^a = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j =  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}C_{h}^{\bar{a}}.\]
+\end{proof}
+
 We observe that it could still be the case that, even if the assumption does not hold, \(\pi_{\bar{a}}\) could still be a separating hyperplane for \(\prodset\), but it may separate \(\prodset\) from above instead of from below. In fact, this occurs whenever there are two adjacent vertices where one attains the maximum over the product and the other the minimum, as they both define supporting hyperplanes.
 %
 We note that Condition \eqref{eq: supporting hyperplane} implies that if \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \leq 0\), then \(p(\bar{a} + d_{\bar{v}}) \leq p(\bar{a})\). Conversely, if \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \geq 0\), then \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\).
