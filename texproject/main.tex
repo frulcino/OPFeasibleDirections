@@ -451,16 +451,15 @@ However, vertices at which the product \(\pi\) attains its maximum (or minimum) 
 We look for sufficient conditions for when if \(\pi_{\bar{a}}\) is a separating hyperplane, if \(a \in \mathfrak{C}\) is and adjacent vertex of \(a\), then also \(\pi_a\) is a separating hyperplane.
 Let \(d_j \coloneqq \bar{a}^{\text{op}}_j - \bar{a}_j \geq 0 \).
 
-\begin{observation}
-	
-\end{observation}
 \begin{proposition}
+	\label{prop: adjacent supporting hyperplanes}
 	If \(\bar{a}\) is an adjacent vertex of \(a\) and \(\pi_{\bar{a}}\) is a separating hyperplane for \(\prodset\), 
-	such that \(\pi_{\bar{a}}(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\), then \(\pi_a\) is also a separating hyperplane for \(\prodset\) if (and only if?) one of the following conditions hold:
-	\begin{enumerate}
-		\item If \(\bar{a}_{\bar{v} \geq 0}\) then  \((p(\bar{a})- p(a))d_j \geq 0\) for all \(j \in I\).
-		\item If \(\bar{a}_{\bar{v} \leq 0}\) then \((p(\bar{a})- p(a))d_j \leq 0\) for all \(j \in I\).
-	\end{enumerate}
+	such that \(\pi_{\bar{a}}(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\), then \(\pi_a\) is also a separating hyperplane for \(\prodset\) such that \(\pi_{a}(x) \leq p(x)\) if and only if 
+	\begin{equation}
+		\label{eq: supporting hyperplane}
+		(p(\bar{a}+d_j) - p(\bar{a}))(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}) \geq 0 \text{ for all } j \in I\setminus{\bar{v}}.
+	\end{equation}
+	Conversely the proposition also works by changing the sign of all inequalities.
 \end{proposition}
 
 \begin{proof}
@@ -468,27 +467,38 @@ Let \(d_j \coloneqq \bar{a}^{\text{op}}_j - \bar{a}_j \geq 0 \).
 	%
 	 Let \(x^J \coloneqq \bar{a} + \sum_{j\in J}d_j\). Then if \(\bar{v}\) is contained in \(J\), we have:
 \begin{align}
-	\pi_a(x^J) &= p(a) + \sum_{j \in J \setminus{\bar{v}}} C_v^a a_v d_v\\
-	&= p(\bar{a}) + C_{\bar{v}}^ad_{\bar{v}} +  + \sum_{j \in J \setminus{\bar{v}}} C_v^a a_v d_v \label{eq: pc}
+	\pi_a(x^J) &= p(a) + \sum_{j \in J \setminus{\bar{v}}} C_v^a  d_v\\
+	&= p(\bar{a}) + C_{\bar{v}}^ad_{\bar{v}} +  + \sum_{j \in J \setminus{\bar{v}}} C_v^a  d_v \label{eq: pc}
 \end{align}
 Since \( C_{\bar{v}}^a = \prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j = C_{\bar{v}}^{\bar{a}}\), and 
  \[ C_{h}^a = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}a_j = \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}\bar{a}_{\bar{v}}\prod_{\substack{j \in I \\ j \neq \bar{v}}}\bar{a}_j =  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}C_{h}^{\bar{a}}.\]
  We have:
 \begin{equation}
-	\eqref{eq: pc} = p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +  + \sum_{j \in J \setminus{\bar{v}}}  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} a_v d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
+	\eqref{eq: pc} = p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +   \sum_{j \in J \setminus{\bar{v}}}  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} a_v d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
 \end{equation}
 Where the first inequality follows direclty from the hypothesis, since either of the two conditions imply that \( \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} \leq C_v^{\bar{v}}\) for all \(v\) in \(J\setminus{\bar{v}}\).
 Similarly the same is done when \(\bar{v} \notin J\):
 
 \begin{align}
-	\pi_a(x^J) &= p(a) - C_{\bar{v}}^ad_{\bar{v}}  + \sum_{j \in J} C_v^a a_v d_v \\
-	&= p(\bar{a}) +  \sum_{j \in J } C_v^a a_v d_v  \\
-	&= p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +  + \sum_{j \in J }  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} a_v d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
+	\pi_a(x^J) &= p(a) - C_{\bar{v}}^ad_{\bar{v}}  + \sum_{j \in J} C_v d_v \\
+	&= p(\bar{a}) +  \sum_{j \in J } C_v^a d_v  \\
+	&= p(\bar{a}) + C_{\bar{v}}^{\bar{a}}d_{\bar{v}} +  + \sum_{j \in J }  \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} C_v^{\bar{a}} d_v \leq \pi_{\bar{a}}(x^J) \leq p(x^J)
 \end{align}
-Thus \(\pi_{\bar{a}}\) is a separating hyperplane.
+Thus \(\pi_{\bar{a}}\) is a separating hyperplane. Now we show that if the conditions doesn't hold than \(\pi_a\) is not a separating hyperplane.
+Consider \(v' \in I \setminus \bar{v}\) such that \(C_{v'}^{\bar{a}}d_{v'}(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}) \geq 0\), then we have:
+\begin{align}
+\pi_a(a - d_{\bar{v}} + d_{v'}) &= \pi_{\bar{a}} + C_{v'}^{a}d_{v'} =  \pi_{\bar{a}} + \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}}C_{v'}^{\bar{a}}d_{v'} >
+\\&= p(\bar{a}) + C_{v'}^{\bar{a}}d_{v'} = p(\bar{a} + d_{v'})= p(a + d_{\bar{v}}+ d_{v'})
+\end{align} 
 \end{proof}
+We observe that it could still be the case that, even if the assumption does not hold, \(\pi_{\bar{a}}\) could still be a separating hyperplane for \(\prodset\), but it may separate \(\prodset\) from above instead of from below. In fact, this occurs whenever there are two adjacent vertices where one attains the maximum over the product and the other the minimum, as they both define supporting hyperplanes.
+%
+We note that Condition \eqref{eq: supporting hyperplane} implies that if \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \leq 0\), then \(p(\bar{a} + d_{\bar{v}}) \leq p(\bar{a})\). Conversely, if \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \geq 0\), then \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\).
+%
+It is natural to examine how this condition behaves when \(\bar{a}\) attains the maximum over the product, as it defines a supporting hyperplane. In this case, it is true that \(p(\bar{a} + d_j) \leq p(\bar{a})\) for all \(j \in I \setminus \{\bar{v}\}\). However, in general, we do not have \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \leq 0\). If \(\bar{a}_{\bar{v}} \geq 0\), this is equivalent to \(d_{\bar{v}} \geq 0\), which would imply \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\). Thus, the adjacent point still attains a maximum.
+%
+On the other hand, if \(\bar{a}_{\bar{v}} \leq 0\), then Condition \eqref{eq: supporting hyperplane} implies that \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\). Therefore, Proposition \ref{prop: adjacent supporting hyperplanes} indicates that the only adjacent vertices to a maximizing vertex which also support \(\prodset\) from below are themselves maximizing vertices.
 
-We remark that both conditions imply that \(d_j\) have the same sign for all \(j\). Thus this only work if either \(\bar{a} = (u_v)_{v_I}\) or \(\bar{a} = (l_v)_{v \in I}\). \textcolor{violet}{1) forse sarebbe meglio specificarlo così nelle ipotesi 2) In compenso percorrendo la dimostrazione si può fare vedere che se le ipotesi non valgono allora non è un separating hyperplane.}
 
 \printthis[false]{
 \begin{theorem}
