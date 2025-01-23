@@ -448,6 +448,81 @@ However, vertices at which the product \(\pi\) attains its maximum (or minimum) 
 	In all cases, the required inequality is satisfied. Hence, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, \(\pi_a\) is a separating hyperplane.
 	\end{proof}
 	
+Let $\mathfrak{C}^n \subset \mathbb{R}^n$ be an $n$-dimensional cuboid (box). 
+Define an $(n-1)$-dimensional face of this cuboid by
+\[
+\mathfrak{C}^{n-1} \;:=\; \prod_{i=1}^{n-1}[l_i,u_i]
+\]
+where $l_i$ is one of the boundary values in the $i$th coordinate.
+
+\begin{enumerate}
+\item \textbf{Restriction:} Any separating (supporting) hyperplane for $\mathfrak{C}^n$ 
+is induces a separating hyperplane for $\mathfrak{C}^{n-1}$.
+
+\item \textbf{Extension:} Conversely, any hyperplane that separates 
+$\mathfrak{C}^{n-1}$ (i.e.\ supports it) 
+can be extended to a hyperplane defined by (or ``anchored at'') 
+some vertex of $\mathfrak{C}^n$.
+\end{enumerate}
+
+\noindent
+Therefore, since the only hyperplanes $\pi_a$ that could possibly remain separating hyperplanes after extension to the full cuboid $\mathfrak{C}^n$ must already separate the $(n-1)$-dimensional face $\mathfrak{C}^{n-1}$, 
+we proceed by induction on $n$.
+\par
+Given \(\pi^{n-1}_{a}\) for vertex \(a in \mathfrak{C}^{n_1}\), consider the extended vertex \(a'=(a,a_n) \in \mathfrak{C}^{n}\), 
+then we have:
+\[
+\pi^{n}_{a'}(x')= \pi_a^{n_1}(x)a_n+ C^{a'}_n (x_n-a_n)
+\]
+Assume that \(p(x) \leq \pi_{a}^{n-1}\) for all \(x \in \mathfrak{C}^{n-1}\), and \(a_n \geq 0\) (otherwise the argument is analogously), then for all \(x' \in \mathfrak{C}^{n_1} \cap \{a_n\}\):
+\[
+p(x') = a_n p(x) \leq a_n \pi_{a}^{n-1}(x) = \pi_{a'}^n.
+\]
+
+We not try do understand when \(\pi^{n-1}_{a'}\) also separates the remaining vertices on \(\mathfrak{C}^{n_1} \cap \{b_n\}\), where \(b_n = a^{op}_n\). That is when for all \(x \in \mathfrak{C}^{n-1}\) we have:
+\[
+b_n\prod_{i=1}^n \leq \pi^{n}_{a'} = a_n \pi^{n-1}(x) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
+\]
+expanding the definition of \(\pi^{n-1}\):
+\[
+	b_n\prod_{i=1}^nx_i \leq = a_n (\sum_{i=1}^{n-1}C_i^a(x_i-a_i) + p(a)) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
+\]
+which is equivalent to:
+\begin{equation}
+\label{eq: hyperplane extension}
+b_n(p(x)-p(a)) \leq a_n(\sum_{i=1}^{n-1}C_i^a(x_i-a_i))
+\end{equation}
+
+We now define the sets:
+\begin{align}
+	C^+_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) > 0\} \\
+	C^-_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) < 0\} \\
+	C^0_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) = 0\} 
+\end{align}
+Then, equation \eqref{eq: hyperplane extension}, is equivalent to the following three equations holding:
+\gr[]{forse ho sbagliato qualcos apechè estendendo puunti di minimo non sunziona}
+\begin{align}
+	{b_n} \leq a_n\inf_{x \in C_a^+}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\geq 0)\\
+	{b_n} \geq a_n\sup_{x \in C_a^-}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\leq 0) \\
+	0 \leq \inf_{x \in C_a^0}\pi^{n-1}(x) - p(a) (\geq 0) \label{eq: 3}
+\end{align}
+We note that equation \eqref{eq: 3} is always satisfied. \gr[]{this is not a big help because we still need to check a lot of points rip}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 We look for sufficient and necessary conditions for when if \(\pi_{\bar{a}}\) is a separating hyperplane, if \(a \in \mathfrak{C}\) is and adjacent vertex of \(a\), then also \(\pi_a\) is a separating hyperplane.
 
 
@@ -504,6 +579,7 @@ We note that Condition \eqref{eq: supporting hyperplane} implies that if \(1 - \
 It is natural to examine how this condition behaves when \(\bar{a}\) attains the maximum over the product, as it defines a supporting hyperplane. In this case, it is true that \(p(\bar{a} + d_j) \leq p(\bar{a})\) for all \(j \in I \setminus \{\bar{v}\}\). However, in general, we do not have \(1 - \frac{a_{\bar{v}}}{\bar{a}_{\bar{v}}} \leq 0\). If \(\bar{a}_{\bar{v}} \geq 0\), this is equivalent to \(d_{\bar{v}} \geq 0\), which would imply \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\). Thus, the adjacent point still attains a maximum.
 %
 On the other hand, if \(\bar{a}_{\bar{v}} \leq 0\), then Condition \eqref{eq: supporting hyperplane} implies that \(p(\bar{a} + d_{\bar{v}}) \geq p(\bar{a})\). Therefore, Proposition \ref{prop: adjacent supporting hyperplanes} indicates that the only adjacent vertices to a maximizing vertex which also support \(\prodset\) from below are themselves maximizing vertices.
+%
 
 
 \printthis[false]{
