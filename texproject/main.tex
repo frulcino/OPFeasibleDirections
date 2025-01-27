@@ -447,7 +447,32 @@ However, vertices at which the product \(\pi\) attains its maximum (or minimum) 
 	
 	In all cases, the required inequality is satisfied. Hence, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, \(\pi_a\) is a separating hyperplane.
 	\end{proof}
-	
+
+We note that computing the cuts induced by the maximum and minimum values of the product 
+$\prod_{v\in V} x_v$ over the given intervals can be done in $O(n)$ time.
+The procedure is as follows:
+\begin{enumerate}
+\item 
+If all interval bounds are positive, then the maximum of the product is achieved by taking the upper bound 
+for each coordinate (and the minimum is achieved by taking the lower bound for each coordinate).
+\item 
+Otherwise, for each variable $v$, choose as $a_v$ the endpoint of its interval $\bigl[l_v,\,u_v\bigr]$ 
+that has the largest absolute value, i.e.,
+\[
+a_v \;\coloneqq\; \underset{x\in\{l_v,u_v\}}{\mathrm{arg\,max}}\;\bigl|x\bigr|.
+\]
+\item 
+If the number of chosen endpoints $a_v$ that are negative is even, 
+then $\bigl(a_v\bigr)_{v\in V}$ gives the \emph{unique maximum} of the product; 
+otherwise, it gives the \emph{unique minimum}.
+\item 
+If the configuration $\bigl(a_v\bigr)_{v\in V}$ yields the maximum (respectively, minimum), 
+then to obtain the minimum (resp.\ maximum), simply switch one coordinate $v^*$ of $\bigl(a_v\bigr)_{v\in V}$ 
+whose ratio $\tfrac{\aop_{v^*}}{a_{v^*}}$ is minimal. 
+This change flips the sign of the product, 
+thus moving from a maximum‐attaining point to a minimum‐attaining point (and vice versa).
+\end{enumerate}
+
 Let $\mathfrak{C}^n \subset \mathbb{R}^n$ be an $n$-dimensional cuboid (box). 
 Define an $(n-1)$-dimensional face of this cuboid by
 \[
@@ -466,26 +491,28 @@ some vertex of $\mathfrak{C}^n$.
 \end{enumerate}
 
 \noindent
-Therefore, since the only hyperplanes $\pi_a$ that could possibly remain separating hyperplanes after extension to the full cuboid $\mathfrak{C}^n$ must already separate the $(n-1)$-dimensional face $\mathfrak{C}^{n-1}$, 
-we proceed by induction on $n$.
+Therefore, since the only hyperplanes $\pi_a$ that could possibly remain separating hyperplanes after extension to the full cuboid $\mathfrak{C}^n$ must already 
+separate the $(n-1)$-dimensional face $\mathfrak{C}^{n-1}$, we proceed by induction on $n$.
 \par
-Given \(\pi^{n-1}_{a}\) for vertex \(a in \mathfrak{C}^{n_1}\), consider the extended vertex \(a'=(a,a_n) \in \mathfrak{C}^{n}\), 
+Given \(\pi^{n-1}_{a}\) for vertex \(a \in \mathfrak{C}^{n_1}\), consider the extended vertex \(a'=(a,a_n) \in \mathfrak{C}^{n}\), 
 then we have:
 \[
-\pi^{n}_{a'}(x')= \pi_a^{n_1}(x)a_n+ C^{a'}_n (x_n-a_n)
+\pi^{n}_{a'}(x')= \pi_a^{n-1}(x)a_n+ C^{a'}_n (x_n-a_n)
 \]
-Assume that \(p(x) \leq \pi_{a}^{n-1}\) for all \(x \in \mathfrak{C}^{n-1}\), and \(a_n \geq 0\) (otherwise the argument is analogously), then for all \(x' \in \mathfrak{C}^{n_1} \cap \{a_n\}\):
+Assume that \(p(x) \leq \pi_{a}^{n-1}\) for all \(x \in \mathfrak{C}^{n-1}\), and \(a_n \geq 0\) (otherwise the argument is analogous), then for all \(x' \in \mathfrak{C}^{n_1} \times \{a_n\}\):
 \[
 p(x') = a_n p(x) \leq a_n \pi_{a}^{n-1}(x) = \pi_{a'}^n.
 \]
 
-We not try do understand when \(\pi^{n-1}_{a'}\) also separates the remaining vertices on \(\mathfrak{C}^{n_1} \cap \{b_n\}\), where \(b_n = a^{op}_n\). That is when for all \(x \in \mathfrak{C}^{n-1}\) we have:
+We now try do understand when \(\pi^{n-1}_{a'}\) also separates the remaining vertices on \(\mathfrak{C}^{n-1} \times \{b_n\}\), where \(b_n = a^{op}_n\).
+%
+ That is when for all \(x \in \mathfrak{C}^{n-1}\) we have:
 \[
 b_n\prod_{i=1}^n \leq \pi^{n}_{a'} = a_n \pi^{n-1}(x) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
 \]
 expanding the definition of \(\pi^{n-1}\):
 \[
-	b_n\prod_{i=1}^nx_i \leq = a_n (\sum_{i=1}^{n-1}C_i^a(x_i-a_i) + p(a)) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
+	b_n\prod_{i=1}^nx_i \leq a_n (\sum_{i=1}^{n-1}C_i^a(x_i-a_i) + p(a)) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
 \]
 which is equivalent to:
 \begin{equation}
@@ -500,15 +527,25 @@ We now define the sets:
 	C^0_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) = 0\} 
 \end{align}
 Then, equation \eqref{eq: hyperplane extension}, is equivalent to the following three equations holding:
-\gr[]{forse ho sbagliato qualcos apechè estendendo puunti di minimo non sunziona}
+\gr[]{this is not a big help because we still need to check a lot of points rip}
 \begin{align}
 	{b_n} \leq a_n\inf_{x \in C_a^+}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\geq 0)\\
-	{b_n} \geq a_n\sup_{x \in C_a^-}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\leq 0) \\
+	{b_n} \geq a_n\sup_{x \in C_a^-}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)}  \\
 	0 \leq \inf_{x \in C_a^0}\pi^{n-1}(x) - p(a) (\geq 0) \label{eq: 3}
 \end{align}
-We note that equation \eqref{eq: 3} is always satisfied. \gr[]{this is not a big help because we still need to check a lot of points rip}
-
-
+We notice that equation \eqref{eq: 3} is always satisfied. 
+%
+Unfortunately, this still means that to know if the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) we need to check \(2^{n-1}\) points.
+%
+However some extensions can be easily excluded, since for an adjacent vertex \(x\) of \(a\), we have \(\pi^{n_1}(x) = p(x)\), thus if \(x \in C^+_a\) we have
+\[b_n \leq a_n\inf_{x \in C^+_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \leq a_n*1\]
+otherwise if \(x \in C^-_a\) we have 
+\[b_, \geq \sup_{x \in C^-_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \geq a_n*1\] 
+In particular, if both \(C_a^+\cap \delta(a)\) and \(C_a^-\cap \delta(a)\) (where \(\delta(a) \) are the neighbouring verticeso of \(a\)) are not empty, that is, if \(a\) si neither a local maximum, nor  a local minimum,
+ then the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) if and only if \(a_n = b_n\) (thus, most often it isn't). Thus we have:
+ \begin{proposition}
+	If \(l_v \neq u_v\) for all \(v\), and \(a\) is a vertex of \(\mathfrak{C}\) defining a separating hyperplane \(\pi_a\), then \(a\) is either a local minimum, or a local maximum.
+ \end{proposition}
 
 
 
