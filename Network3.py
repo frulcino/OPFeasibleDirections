@@ -284,7 +284,7 @@ class network:
             # m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[(i, j)] for j in linked_buses))  # (5) + (6) imaginary
             possible_ks = []
             for k in range(len(double_branches)):
-                if double_branches[k][0] == i and double_branches[k][1] in linked_buses:
+                if double_branches[k][0] == i: # and double_branches[k][1] in linked_buses
                     possible_ks.append(k)
             m.addLConstr(sum(Pg[g] for g in gen_at_bus) - Pd[i] == sum(P[k] for k in possible_ks))  # (5) + (6) real
             m.addLConstr(sum(Qg[g] for g in gen_at_bus) - Qd[i] == sum(Q[k] for k in possible_ks))  # (5) + (6) imaginary
@@ -427,7 +427,7 @@ def numpy_float_array(string_array):
 
 # %%
 
-case = datasets.load_opf_example("case57")
+case = datasets.load_opf_example("case300")
 
 # %%
 nj = network()

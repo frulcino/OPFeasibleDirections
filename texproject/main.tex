@@ -60,8 +60,7 @@
 	
 	\section{Jabr Model}
 	
-	
-	
+
 	For the OPF model construction we the network as directed graph
 	$(\boB,\boL)$ where $\boB$ is the set of Buses and and $\boL \subset \boB \times \boB$ is the 
 	set of branches of the network and for each adjacent buses $k,m$ both $(k,m)$ and $(m,k)$ are
@@ -119,7 +118,7 @@
 	
 	Consider a set of multilinear constraints:
 	\begin{align}
-		\sum_{I \in \cI_j}c_I^j\prod_{v \in I_j} x_v \quad \forall I \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \\
+		\sum_{I \in \cI_j}c_I^j\prod_{v \in I} x_v  \leq b_j \quad \forall j \in \{1,2,\ldots, m\} \\
 		x_v \in [l_v,u_v] \quad \forall v \in V
 	\end{align}
 	Where \(V\) denotes the variables and \(\cI_j \in \cP(V)\), for \(j = 1,\ldots,m\) are the variables of the monomials appearing in the j-th homogenous constraint.
@@ -130,6 +129,7 @@
 		z_I = \prod_{i \in I} x_i \quad \forall I \in \cE \coloneqq \cup_{j=1}^m I_j \\
 		x_v \in [l_v,u_v] \quad \forall v \in V
 	\end{align}
+	\gr[inline]{What follows is was our first try (the one we coded), it took too long to be meaningfully tested and made the problem a MILP. We are now trying to keep it LP.}
 	
 	By affine afformation we can assume the variables \(x_v\) to be in the form \(c_v \in [0,1]\). Note that such affine transformations need to be handled with care, we will cover this in subsection \ref{subsection:Handling affine trasformations}.\
 	Since contraint \eqref{constr: linearized multilinear constraint} is now linear, we are now interested in the linearization of the following set \(Pr \coloneqq  \{(x,z) \in [0,1]^V \times [0,1]^{\cE} \mid z_I = \prod_{i \in I} \forall I \in \cE\}\).
@@ -192,6 +192,7 @@
 	\gr[inline]{Il resto del paper McCormick strikes back drovebbe valere anche qui, perchè parla della struttura dei rilassamenti, che non dipende da Pr.}
 	
 	\subsection{Handling affine trasformations}\label{subsection:Handling affine trasformations}
+	\gr[inline]{Old try part two}
 	In the beginning of the sections, we assumed that the variables \(x_i \in [0,1]\) because affine transformation of homogenous constraints remain homogenous.But it must be noted that for each non linear affine trasformation, that is when the lower bound of the corresponding variable is not zero, the number of monomials increases. More precisly, given a monomial defined by \(I \in \cE\), let \(I' \subset I\) be the subset of variables in \(I\) for which a nonlinear trasformation is applied. Then the monomial \(I\) is split into \(2^{|I'| +1}\) new monomials. When the size of such \(I'\) is large this greatly increases the number of auxiliary variables \(z_J\) which must be introduced.
 	Thus applying many non linear affine transformation can be very costly and complicates the handling of the constraints. For this reason, instead of applying non linear affine transformation, for each variables \(v \in V\) such that \(x_v \in [l_v,u_v]\) and \(l_v*u_v \neq  0 \), we split the problem in two new subproblems having \( v_x \in [l_v, 0]\) and \(v_x \in [0, u_v]\) respectively. This way linear transformations can be applied in the subproblems. This creates many subproblems, many of which are unfeasible for the OPF, we diminish the number of subproblems we need to solve thanks to some unfeasibility conditions. Then, instead of solving each subproblem in a random order, we rewrite the subproblems as a unique mixed integer programming problem.
 	
@@ -240,6 +241,268 @@
 		
 
 	\section{Other cuts}
+
+	
+\subsection{A new(?) class of contraints}
+\newcommand{\aop}{a^{\text{op}}}
+\newcommand{\prodset}{Pr}
+\newcommand{\pisum}[1]{\prod_{v \in I\setminus{\{#1\}}}a_v (\aop_{#1}-a_{#1})}
+We now consider when, given a vertex \(a\) of the cuboid \(\mathfrak{C}\), we can define a separating hyperplane \(\pi\) for \(\prodset\), that is, when \(\pi: \mathbb{R}^n \to \mathbb{R}\)
+such that either \(\pi(x) \leq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\) for all \(x\) in the vertex or \(\pi(x) \geq \prod_{v \in I}x_v\)
+for all \(x\) in \(\mathfrak{C}\). Furthermore, we want a good cut, so we look for hyperplanes such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\). 
+%
+In this section we denote the vertex opposite to \(a\), \(\aop\). Choosing a vertex, corresponds to picking for each interval \(v \in I\), 
+either the lower bound or the upper bound, so \(\aop\) is the vertex having as \(\aop_v = l_v\) if \(a_v = u_v\) and \(\aop_v = u_v\) otherwise.
+%
+Thus by defining \(d_v \coloneqq (\aop_v - a_v)e_v\), a vertex \(x \in \mathfrak{C}\) corresponds to a unique \(J \subset I\) such that \[x = a + \sum_{v \in J} d_v\]
+for this reason we denote \(x\) as \(x_J\).
+%
+First we observe that since in \(\mathbb{R}^{n+1}\) fixed \(n+1\) affinely independent points there exists a unique hyperplane containing all these points, then there exists a unique hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\) and for \(y = x\).
+\begin{observation}
+	The hyperplane \(\pi_a(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v(x_v - a_v)\), 
+	where \(C_v \coloneqq \prod_{v' \in I \setminus \{v\}}a_v\), is the only hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\).
+\end{observation}
+%
+We now look for conditions for when this uniquely defined hyperplane is also a separating hyperplane for \(\mathfrak{C}\). First we observe that: 
+
+\par	
+\begin{observation}\label{obs: change sign}
+Fix \(\bar{v}\in V\). If \(f:\mathbb{R}^{n}\to \mathbb{R}^{n}\) is a linear transformation defined by \(f(x)_{\bar{v}}= -x_{\bar{v}}\) and \(f(x)_v= x_{v}\) for all \(v\in V\setminus{\bar{v}}\). 
+If \(\pi_a{}(x)\) is a separating hyperplane for \(\mathfrak{C}\), then \(f(\pi_a(x))\) is a separating hyperplane for \(f(\mathfrak{C})\).
+\end{observation}
+This mean that we can arbitriarly change signs of the extreme of the intervals.
+%
+\newcommand{\prodi}[1]{p(#1)}
+\begin{proposition}
+	\label{prop: sufficient and necessary sep hyperplane}
+	The hyperplane \(\pi \coloneqq \pi_a\) is a separating hyperplane for \(\prodset\) if and only if either for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\), \(k = 1,\ldots,s-1\) and \(J_k \coloneqq \{j_1,\ldots,j_k\}\), defining \(x^{J_k}\coloneqq a + \sum_{v \in J_k}d_v\), the following holds:
+	\begin{equation}
+		\sum_{k = 2}^{s} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}{x^{J_k}_v}\right) (\aop_{j_k}-a_{j_k})\geq 0
+	\end{equation}
+	or for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\): 
+	\begin{equation}
+		\sum_{k = 2}^{s} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}x^{J_k}_v\right) (\aop_{j_k}-a_{j_k})\leq 0
+	\end{equation}
+	
+\end{proposition}
+\begin{proof}
+
+Let \(\prodi{x} \coloneqq \prod_{v \in I}x_v\).	Observe that for all \(J \subset I\) with \(|J| = 1\), we have \(\pi(x^J) = \prodi{x^J}\) since \(x^J\) is an adjacent vertex to \(a\).
+%
+ Now fix \(J \subset I\) and denote \(J_h = \{j_1,\ldots,j_h\} \subset J\) for \(h=1,\ldots,s=|J|\).
+	Then we have:
+	\begin{equation}
+		\label{eq: supp hyperplane}
+		\pi(x_J) = \sum_{h=1}^{s-1} \left(\pi({x_{J_{h+1}}}) - \pi({x_{J_{h}}})\right) + \pi({x_{J_1}}) = \sum_{h=2}^{s}  \left((\aop_{j_h}-a_{j_h})\prod_{\substack{v \in I \\ v \neq j_h}}a_v\right) + \prodi{{x_{J_1}}}
+	\end{equation}
+	This follows from the fact that 
+	\[\pi({x_{J_{h+1}}}) - \pi({x_{J_{h}}}) = C_{j_{h+1}} (\aop_{j_{h+1}} - a_{j_{h+1}}) = \prod_{\substack{v \in I \\ v \neq j_{h+1}}}a_v (\aop_{j_{h+1}} - a_{j_{h+1}}).\] 
+	And similarly, we have that:
+	\begin{equation}
+			\prodi{{x_J}}  = \sum_{h=1}^{s-1} \left(\prodi{{x_{J_{h+1}}}} - \prodi{{x_{J_{h}}}}\right) + \prodi{{x_{J_1}}} = \sum_{h=2}^{s}  \left((\aop_{j_h}-a_{j_h})\prod_{\substack{v \in I \\ v \neq j_h}} x^{J_h}_v\right) + \prodi{{x_{J_1}}}
+	\end{equation}
+	From which the thesis follows.
+	\end{proof}
+Since Inequality \eqref{eq: supp hyperplane} needs to hold for all subsets of \(I\), it is in general non-trivial to assess for which vertices \(a \in \mathfrak{C}\), the hyperplane \(\pi_a\) serves as a separating hyperplane. 
+However, vertices at which the product \(\pi\) attains its maximum (or minimum) value on the cuboid always define separating hyperplanes:
+
+\begin{proposition}
+	If 
+	\[
+	\max_{x \in \mathfrak{C}}\prod_{v \in I}x_v = \prod_{v \in I}a_v 
+	\quad\text{or}\quad 
+	\min_{x \in \mathfrak{C}}\prod_{v \in I}x_v = \prod_{v \in I}a_v,
+	\]
+	then \(\pi_a\) is a separating hyperplane. 
+	%
+	In particular, if the maximum and the minimum are respectively positive and negative, in the first case we have \(\pi_a(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\) and in the second case \(\pi_a(x) \geq p(x)\).
+	Otherwise if the minimum is positive then we have \(\pi_a(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\), where \(a\) is the point atteining the minimum and  \(\pi_b(x) \geq p(x)\) where \(b\) is the point atteining the maximum.
+
+	\end{proposition}
+	
+	\begin{proof}
+	Assume that \(\prod_{v \in I}a_v\) attains the maximum. The argument for the minimum case is analogous.
+	
+	By Proposition~\ref{prop: sufficient and necessary sep hyperplane}, it suffices to verify that for all \(J \subset I\) and \(j \in J\):
+	\[
+	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
+	\]
+	
+	First, consider the case \(\prod_{v \in I}a_v \geq 0\):
+	
+	\item If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \geq 0\), then \(a_j \geq 0\) and \(a_j \geq \aop_j\). Since 
+	\[
+	a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	\]
+	it follows that 
+	\[
+	\prod_{\substack{v \in I \\ v \neq j}}a_v \geq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v.
+	\]
+	Hence,
+	\[
+	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
+	\]
+	
+	 If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \leq 0\), then \(a_j \leq 0\) and \(a_j \leq \aop_j\). Since
+	\[
+	a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	\]
+	we have
+	\[
+	\prod_{\substack{v \in I \\ v \neq j}}a_v \leq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	\]
+	and again
+	\[
+	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
+	\]
+
+	
+	Now consider the scenario where \(\prod_{v \in I}a_v \leq 0\). Changing the signs of the extreme values of an interval, , by Observation \ref{obs: change sign}, we obtain that this is equivalent to showing that if \(a\) atteins the minimum, and the minimum is positive, then \(a\) defines a separating hyperplane.
+	But the minimum of the product is positive only if all the extremes of all the intervals are positive, and the minimum is obtained only when \(a_v = l_v \leq u_v = \aop_v\) for all \(v\). Thus \(\aop_v - a_v \geq 0\) and \(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}} x_v\leq 0 \) for all \(I\) and \(j \in I\), so the result follows. 
+
+	% Again, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, it suffices to verify that for all \(J \subset I\) and \(j \in J\):
+	% \[
+	% \left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \geq 0.
+	% \]
+
+
+	% \item If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \geq 0\), then \(a_j \leq 0\) and \(a_j \geq \aop_j\). Since 
+	% \[
+	% a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	% \]
+	% it follows that 
+	% \[
+	% \prod_{\substack{v \in I \\ v \neq j}}a_v \leq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v.
+	% \]
+	% Hence,
+	% \[
+	% \left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \geq 0.
+	% \]
+	
+	%  If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \leq 0\), then \(a_j \geq 0\) and \(a_j \leq \aop_j\). Since
+	% \[
+	% a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	% \]
+	% we have
+	% \[
+	% \prod_{\substack{v \in I \\ v \neq j}}a_v \geq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
+	% \]
+	% and again
+	% \[
+	% \left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \geq 0.
+	% \]
+
+	
+	In all cases, the required inequality is satisfied. Hence, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, \(\pi_a\) is a separating hyperplane.
+	\end{proof}
+
+We note that computing the cuts induced by the maximum and minimum values of the product 
+$\prod_{v\in V} x_v$ over the given intervals can be done in $O(n)$ time.
+The procedure is as follows:
+\begin{enumerate}
+\item 
+If all interval bounds are positive, then the maximum of the product is achieved by taking the upper bound 
+for each coordinate (and the minimum is achieved by taking the lower bound for each coordinate).
+\item 
+Otherwise, for each variable $v$, choose as $a_v$ the endpoint of its interval $\bigl[l_v,\,u_v\bigr]$ 
+that has the largest absolute value, i.e.,
+\[
+a_v \;\coloneqq\; \underset{x\in\{l_v,u_v\}}{\mathrm{arg\,max}}\;\bigl|x\bigr|.
+\]
+\item 
+If the number of chosen endpoints $a_v$ that are negative is even, 
+then $\bigl(a_v\bigr)_{v\in V}$ gives the \emph{unique maximum} of the product; 
+otherwise, it gives the \emph{unique minimum}.
+\item 
+If the configuration $\bigl(a_v\bigr)_{v\in V}$ yields the maximum (respectively, minimum), 
+then to obtain the minimum (resp.\ maximum), simply switch one coordinate $v^*$ of $\bigl(a_v\bigr)_{v\in V}$ 
+whose ratio $\tfrac{\aop_{v^*}}{a_{v^*}}$ is minimal. 
+This change flips the sign of the product, 
+thus moving from a maximum‐attaining point to a minimum‐attaining point (and vice versa).
+\end{enumerate}
+
+\subsection{Extensions and restrictions}
+
+Let $\mathfrak{C}^n \subset \mathbb{R}^n$ be an $n$-dimensional cuboid (box). 
+Define an $(n-1)$-dimensional face of this cuboid by
+\[
+\mathfrak{C}^{n-1} \;:=\; \prod_{i=1}^{n-1}[l_i,u_i]
+\]
+where $l_i$ is one of the boundary values in the $i$th coordinate.
+
+\begin{enumerate}
+\item \textbf{Restriction:} Any separating (supporting) hyperplane for $\mathfrak{C}^n$ 
+is induces a separating hyperplane for $\mathfrak{C}^{n-1}$.
+
+\item \textbf{Extension:} Conversely, any hyperplane that separates 
+$\mathfrak{C}^{n-1}$ (i.e.\ supports it) 
+can be extended to a hyperplane defined by (or ``anchored at'') 
+some vertex of $\mathfrak{C}^n$.
+\end{enumerate}
+
+\noindent
+Therefore, since the only hyperplanes $\pi_a$ that could possibly remain separating hyperplanes after extension to the full cuboid $\mathfrak{C}^n$ must already 
+separate the $(n-1)$-dimensional face $\mathfrak{C}^{n-1}$, we proceed by induction on $n$.
+\par
+Given \(\pi^{n-1}_{a}\) for vertex \(a \in \mathfrak{C}^{n_1}\), consider the extended vertex \(a'=(a,a_n) \in \mathfrak{C}^{n}\), 
+then we have:
+\[
+p(x')=\pi^{n}_{a'}(x')= \pi_a^{n-1}(x)a_n+ C^{a'}_n (x_n-a_n)=\pi^x(x')
+\]
+Assume that \(p(x) \leq \pi_{a}^{n-1}\) for all \(x \in \mathfrak{C}^{n-1}\), and \(a_n \geq 0\) (otherwise the argument is analogous), then for all \(x' \in \mathfrak{C}^{n_1} \times \{a_n\}\):
+\[
+p(x') = a_n p(x) \leq a_n \pi_{a}^{n-1}(x) = \pi_{a'}^n.
+\]
+
+We now try do understand when \(\pi^{n-1}_{a'}\) also separates the remaining vertices on \(\mathfrak{C}^{n-1} \times \{b_n\}\), where \(b_n = a^{op}_n\).
+%
+ That is when for all \(x \in \mathfrak{C}^{n-1}\) we have:
+\[
+b_n\prod_{i=1}^{n-1}x_i \leq \pi^{n}_{a'} = a_n \pi^{n-1}(x) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
+\]
+expanding the definition of \(\pi^{n-1}\):
+\[
+	b_n\prod_{i=1}^{n-1}x_i \leq a_n (\sum_{i=1}^{n-1}C_i^a(x_i-a_i) + p(a)) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
+\]
+which is equivalent to:
+\begin{equation}
+\label{eq: hyperplane extension}
+b_n(p(x)-p(a)) \leq a_n(\sum_{i=1}^{n-1}C_i^a(x_i-a_i))
+\end{equation}
+
+We now define the sets:
+\begin{align}
+	C^+_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) > 0\} \\
+	C^-_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) < 0\} \\
+	C^0_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) = 0\} 
+\end{align}
+Then, equation \eqref{eq: hyperplane extension}, is equivalent to the following three equations holding:
+\gr[]{this is not a big help because we still need to check a lot of points rip}
+\begin{align}
+	{b_n} \leq a_n\inf_{x \in C_a^+}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\geq 0)\\
+	{b_n} \geq a_n\sup_{x \in C_a^-}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)}  \\
+	0 \leq \inf_{x \in C_a^0}\pi^{n-1}(x) - p(a) (\geq 0) \label{eq: 3}
+\end{align}
+We notice that equation \eqref{eq: 3} is always satisfied. 
+%
+Unfortunately, this still means that to know if the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) we need to check \(2^{n-1}\) points.
+%
+However some extensions can be easily excluded, since for an adjacent vertex \(x\) of \(a\), we have \(\pi^{n_1}(x) = p(x)\), thus if \(x \in C^+_a\) we have
+\[b_n \leq a_n\inf_{x \in C^+_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \leq a_n*1\]
+otherwise if \(x \in C^-_a\) we have 
+\[b_, \geq \sup_{x \in C^-_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \geq a_n*1\] 
+In particular, if both \(C_a^+\cap \delta(a)\) and \(C_a^-\cap \delta(a)\) (where \(\delta(a) \) are the neighbouring verticeso of \(a\)) are not empty, that is, if \(a\) si neither a local maximum, nor  a local minimum,
+ then the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) if and only if \(a_n = b_n\) (thus, most often it isn't). Thus we have:
+ \begin{proposition}
+	If \(l_v \neq u_v\) for all \(v\), and \(a\) is a vertex of \(\mathfrak{C}\) defining a separating hyperplane \(\pi_a\), then \(a\) is either a local minimum, or a local maximum.
+ \end{proposition}
+\gr[inline]{i minimi (massimi locali) sono dati da quei punti aventi per ciascuna cordinata per cui gli estremi dell'intervallo ha lo stesso segno, dall'estremo col modulo maggiore. Mentre per ciascuno intervallo con estremi con segni discordi una qualunque scelta in modo tale che ne ha un numero dispari di segni negativi se è un minimo locale e un numero pari se è massimo locale.}
+
+\gr[]{questo vuol dire che se tutte gli intervalli sono positivi gli unici hyperplane che separano sono quelli dei massimi e minimi globali?}
+
+
+
+\subsection{Old stuff}
 	Let \(I\) a set of indices and \(x_v\), \(v \in I\), continuous variables such that \(x_v \in [l_v, u_v] \subset [-1, 1]\). Let also the set \(I\) be partitioned in two set such that  \(I = J \oplus K\) and 
 	\begin{subequations}
 		\begin{align}
@@ -340,223 +603,8 @@
 		Note that, with the same notation of the proof above, \eqref{eq:ineq-lb} is tight for every vertex of \(\mathfrak{C}\) for which \(|I_1| \leq 1\).
 	\end{observation}
 
-\subsection{A new(?) class of contraints}
-\newcommand{\aop}{a^{\text{op}}}
-\newcommand{\prodset}{Pr}
-\newcommand{\pisum}[1]{\prod_{v \in I\setminus{\{#1\}}}a_v (\aop_{#1}-a_{#1})}
-We now consider when, given a vertex \(a\) of the cuboid \(\mathfrak{C}\), we can define a separating hyperplane \(\pi\) for \(\prodset\), that is, when \(\pi: \mathbb{R}^n \to \mathbb{R}\)
-such that either \(\pi(x) \leq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\) for all \(x\) in the vertex or \(\pi(x) \geq \prod_{v \in I}x_v\)
-for all \(x\) in \(\mathfrak{C}\). Furthermore, we want a good cut, so we look for hyperplanes such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\). 
-%
-In this section we denote the vertex opposite to \(a\), \(\aop\). Choosing a vertex, corresponds to picking for each interval \(v \in I\), 
-either the lower bound or the upper bound, so \(\aop\) is the vertex having as \(\aop_v = l_v\) if \(a_v = u_v\) and \(\aop_v = u_v\) otherwise.
-%
-Thus by defining \(d_v \coloneqq (\aop_v - a_v)e_v\), a vertex \(x \in \mathfrak{C}\) corresponds to a unique \(J \subset I\) such that \[x = a + \sum_{v \in J} d_v\]
-for this reason we denote \(x\) as \(x_J\).
-%
-First we observe that since in \(\mathbb{R}^{n+1}\) fixed \(n+1\) affinely independent points there exists a unique hyperplane containing all these points, then there exists a unique hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\) and for \(y = x\).
-\begin{observation}
-	The hyperplane \(\pi_a(x) \coloneqq \prod_{v \in I}a_v + \sum_{v \in I} C_v a_v(x_v - a_v)\), where \(C_v \coloneqq \prod_{v' \in I \setminus \{v\}}\), is the only hyperplane such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\).
-\end{observation}
-%
-We now look for conditions for when this uniquely defined hyperplane is also a separating hyperplane for \(\prodset\).
-%
-\newcommand{\prodi}[1]{p(#1)}
-\begin{proposition}
-	\label{prop: sufficient and necessary sep hyperplane}
-	The hyperplane \(\pi_a\) is a separating hyperplane for \(\prodset\) if and only if either for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\), \(k = 1,\ldots,s-1\) and \(J_k \coloneqq \{j_1,\ldots,j_k\}\), the following holds:
-	\begin{equation}
-		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}{x^{J_k}_v}\right) (\aop_{j_s}-a_{j_s})\geq 0
-	\end{equation}
-	or for all \(J \subset I\), \(J = \{j_1,\ldots,j_s\}\): 
-	\begin{equation}
-		\sum_{k = 1}^{s-1} \left(\prod_{\substack{v \in I \\ v \neq j_k}}a_v - \prod_{\substack{v \in I \\ v \neq j_k}}x^{J_k}_v\right) (\aop_{j_s}-a_{j_s})\leq 0
-	\end{equation}
-	
-\end{proposition}
-\begin{proof}
 
-Let \(\prodi{x} \coloneqq \prod_{v \in I}x_v\).	Observe that for all \(J \subset I\) with \(|J| = 1\), we have \(\pi(x) = \prodi{x}\).
-%
- Now fix \(J \subset I\) and denote \(J_h = \{j_1,\ldots,j_h\} \subset J\) for \(h=1,\ldots,s\).
-	Then we have:
-	\begin{equation}
-		\label{eq: supp hyperplane}
-		\pi(x_J) = \sum_{h=1}^{s-1} \pi({x_{J_{h+1}}}) - \pi({x_{J_{h}}}) + \pi({x_{J_1}}) = \sum_{h=1}^{s-1}  \left(\prod_{\substack{v \in I \\ v \neq j_h}}a_v\right)(\aop_{j_h}-a_{j_h}) + \prodi{{x_{J_1}}}
-	\end{equation}
-	And similarly:
-	\begin{equation}
-		\prodi{{x_J}}  = \sum_{h=1}^{s-1} \prodi{{x_{J_{h+1}}}} - \prodi{{x_{J_{h}}}} + \prodi{{x_{J_1}}} = \sum_{h=1}^{s-1}  \left(\prod_{\substack{v \in I \\ v \neq j_h}} a_v\right)(\aop_{j_h}-a_{j_h}) + \prodi{{x_{J_1}}}
-	\end{equation}
-	From which the thesis follows.
-	\end{proof}
-Since Inequality \eqref{eq: supp hyperplane} needs to hold for all subsets of \(I\), it is in general non-trivial to assess for which vertices \(a \in \mathfrak{C}\), the hyperplane \(\pi_a\) serves as a separating hyperplane. 
-However, vertices at which the product \(\pi\) attains its maximum (or minimum) value on the cuboid always define separating hyperplanes:
-
-\begin{proposition}
-	If 
-	\[
-	\max_{x \in \mathfrak{C}}\prod_{v \in I}x_v = \prod_{v \in I}a_v 
-	\quad\text{or}\quad 
-	\min_{x \in \mathfrak{C}}\prod_{v \in I}x_v = \prod_{v \in I}a_v,
-	\]
-	then \(\pi_a\) is a separating hyperplane. 
-	%
-	In particular in the first case we have \(\pi_a(x) \leq p(x)\) for all \(x\) in \(\mathfrak{C}\) and in the second case \(\pi_a(x) \geq p(x)\).
-
-	\end{proposition}
-	
-	\begin{proof}
-	Assume that \(\prod_{v \in I}a_v\) attains the maximum. The argument for the minimum case is analogous.
-	
-	By Proposition~\ref{prop: sufficient and necessary sep hyperplane}, it suffices to verify that for all \(J \subset I\) and \(j \in J\):
-	\[
-	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
-	\]
-	
-	First, consider the case \(\prod_{v \in I}a_v \geq 0\):
-	
-	\item If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \geq 0\), then \(a_j \geq 0\) and \(a_j \geq \aop_j\). Since 
-	\[
-	a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
-	\]
-	it follows that 
-	\[
-	\prod_{\substack{v \in I \\ v \neq j}}a_v \geq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v.
-	\]
-	Hence,
-	\[
-	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
-	\]
-	
-	 If \(\prod_{\substack{v \in I \\ v \neq j}}a_v \leq 0\), then \(a_j \leq 0\) and \(a_j \leq \aop_j\). Since
-	\[
-	a_j\prod_{\substack{v \in I \\ v \neq j}}a_v \geq a_j\prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
-	\]
-	we have
-	\[
-	\prod_{\substack{v \in I \\ v \neq j}}a_v \geq \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v,
-	\]
-	and again
-	\[
-	\left(\prod_{\substack{v \in I \\ v \neq j}}a_v - \prod_{\substack{v \in I \\ v \neq j}}x^{J}_v\right)(\aop_j - a_j) \leq 0.
-	\]
-
-	
-	Now consider the scenario where \(\prod_{v \in I}a_v < 0\). In this case all signs are reversed accordingly and the argument is the same.
-	
-	In all cases, the required inequality is satisfied. Hence, by Proposition~\ref{prop: sufficient and necessary sep hyperplane}, \(\pi_a\) is a separating hyperplane.
-	\end{proof}
-
-We note that computing the cuts induced by the maximum and minimum values of the product 
-$\prod_{v\in V} x_v$ over the given intervals can be done in $O(n)$ time.
-The procedure is as follows:
-\begin{enumerate}
-\item 
-If all interval bounds are positive, then the maximum of the product is achieved by taking the upper bound 
-for each coordinate (and the minimum is achieved by taking the lower bound for each coordinate).
-\item 
-Otherwise, for each variable $v$, choose as $a_v$ the endpoint of its interval $\bigl[l_v,\,u_v\bigr]$ 
-that has the largest absolute value, i.e.,
-\[
-a_v \;\coloneqq\; \underset{x\in\{l_v,u_v\}}{\mathrm{arg\,max}}\;\bigl|x\bigr|.
-\]
-\item 
-If the number of chosen endpoints $a_v$ that are negative is even, 
-then $\bigl(a_v\bigr)_{v\in V}$ gives the \emph{unique maximum} of the product; 
-otherwise, it gives the \emph{unique minimum}.
-\item 
-If the configuration $\bigl(a_v\bigr)_{v\in V}$ yields the maximum (respectively, minimum), 
-then to obtain the minimum (resp.\ maximum), simply switch one coordinate $v^*$ of $\bigl(a_v\bigr)_{v\in V}$ 
-whose ratio $\tfrac{\aop_{v^*}}{a_{v^*}}$ is minimal. 
-This change flips the sign of the product, 
-thus moving from a maximum‐attaining point to a minimum‐attaining point (and vice versa).
-\end{enumerate}
-
-Let $\mathfrak{C}^n \subset \mathbb{R}^n$ be an $n$-dimensional cuboid (box). 
-Define an $(n-1)$-dimensional face of this cuboid by
-\[
-\mathfrak{C}^{n-1} \;:=\; \prod_{i=1}^{n-1}[l_i,u_i]
-\]
-where $l_i$ is one of the boundary values in the $i$th coordinate.
-
-\begin{enumerate}
-\item \textbf{Restriction:} Any separating (supporting) hyperplane for $\mathfrak{C}^n$ 
-is induces a separating hyperplane for $\mathfrak{C}^{n-1}$.
-
-\item \textbf{Extension:} Conversely, any hyperplane that separates 
-$\mathfrak{C}^{n-1}$ (i.e.\ supports it) 
-can be extended to a hyperplane defined by (or ``anchored at'') 
-some vertex of $\mathfrak{C}^n$.
-\end{enumerate}
-
-\noindent
-Therefore, since the only hyperplanes $\pi_a$ that could possibly remain separating hyperplanes after extension to the full cuboid $\mathfrak{C}^n$ must already 
-separate the $(n-1)$-dimensional face $\mathfrak{C}^{n-1}$, we proceed by induction on $n$.
-\par
-Given \(\pi^{n-1}_{a}\) for vertex \(a \in \mathfrak{C}^{n_1}\), consider the extended vertex \(a'=(a,a_n) \in \mathfrak{C}^{n}\), 
-then we have:
-\[
-\pi^{n}_{a'}(x')= \pi_a^{n-1}(x)a_n+ C^{a'}_n (x_n-a_n)
-\]
-Assume that \(p(x) \leq \pi_{a}^{n-1}\) for all \(x \in \mathfrak{C}^{n-1}\), and \(a_n \geq 0\) (otherwise the argument is analogous), then for all \(x' \in \mathfrak{C}^{n_1} \times \{a_n\}\):
-\[
-p(x') = a_n p(x) \leq a_n \pi_{a}^{n-1}(x) = \pi_{a'}^n.
-\]
-
-We now try do understand when \(\pi^{n-1}_{a'}\) also separates the remaining vertices on \(\mathfrak{C}^{n-1} \times \{b_n\}\), where \(b_n = a^{op}_n\).
-%
- That is when for all \(x \in \mathfrak{C}^{n-1}\) we have:
-\[
-b_n\prod_{i=1}^n \leq \pi^{n}_{a'} = a_n \pi^{n-1}(x) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
-\]
-expanding the definition of \(\pi^{n-1}\):
-\[
-	b_n\prod_{i=1}^nx_i \leq a_n (\sum_{i=1}^{n-1}C_i^a(x_i-a_i) + p(a)) + \prod_{i=1}^{n-1}a_i(b_n-a_n)
-\]
-which is equivalent to:
-\begin{equation}
-\label{eq: hyperplane extension}
-b_n(p(x)-p(a)) \leq a_n(\sum_{i=1}^{n-1}C_i^a(x_i-a_i))
-\end{equation}
-
-We now define the sets:
-\begin{align}
-	C^+_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) > 0\} \\
-	C^-_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) < 0\} \\
-	C^0_a \coloneqq \{x \in \mathfrak{C}^{n-1}\mid p(x) - p(a) = 0\} 
-\end{align}
-Then, equation \eqref{eq: hyperplane extension}, is equivalent to the following three equations holding:
-\gr[]{this is not a big help because we still need to check a lot of points rip}
-\begin{align}
-	{b_n} \leq a_n\inf_{x \in C_a^+}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} (\geq 0)\\
-	{b_n} \geq a_n\sup_{x \in C_a^-}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)}  \\
-	0 \leq \inf_{x \in C_a^0}\pi^{n-1}(x) - p(a) (\geq 0) \label{eq: 3}
-\end{align}
-We notice that equation \eqref{eq: 3} is always satisfied. 
-%
-Unfortunately, this still means that to know if the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) we need to check \(2^{n-1}\) points.
-%
-However some extensions can be easily excluded, since for an adjacent vertex \(x\) of \(a\), we have \(\pi^{n_1}(x) = p(x)\), thus if \(x \in C^+_a\) we have
-\[b_n \leq a_n\inf_{x \in C^+_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \leq a_n*1\]
-otherwise if \(x \in C^-_a\) we have 
-\[b_, \geq \sup_{x \in C^-_a}\frac{\pi^{n-1}(x) - p(a)}{p(x)-p(a)} \geq a_n*1\] 
-In particular, if both \(C_a^+\cap \delta(a)\) and \(C_a^-\cap \delta(a)\) (where \(\delta(a) \) are the neighbouring verticeso of \(a\)) are not empty, that is, if \(a\) si neither a local maximum, nor  a local minimum,
- then the extension of \(\pi^{n-1}_{a}\) is a separating hyperplane for \(\mathfrak{C}^{n}\) if and only if \(a_n = b_n\) (thus, most often it isn't). Thus we have:
- \begin{proposition}
-	If \(l_v \neq u_v\) for all \(v\), and \(a\) is a vertex of \(\mathfrak{C}\) defining a separating hyperplane \(\pi_a\), then \(a\) is either a local minimum, or a local maximum.
- \end{proposition}
-
-
-
-
-
-
-
-
-
-
-
+\subsection{Other tries}
 
 
 

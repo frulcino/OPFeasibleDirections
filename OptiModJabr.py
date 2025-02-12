@@ -5,7 +5,7 @@ Created on Mon May 20 11:01:49 2024
 
 @author: frulcino
 """
-
+#%%
 import gurobipy as gp
 from gurobi_optimods import datasets, opf
 import numpy as np
@@ -226,3 +226,4 @@ diff = np.array([abs(lhs[i] - rhs[i]) for i in range(len(loops))])
 print(np.linalg.norm(diff), max(diff), sum(diff)/len(diff))
 for (k,l) in branches:
     print(abs(s[(k,l)].X**2 + c[(k,l)].X**2 - v[k].X*v[l].X))
+# %%
