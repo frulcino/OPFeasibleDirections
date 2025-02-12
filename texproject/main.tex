@@ -247,11 +247,11 @@
 \newcommand{\aop}{a^{\text{op}}}
 \newcommand{\prodset}{Pr}
 \newcommand{\pisum}[1]{\prod_{v \in I\setminus{\{#1\}}}a_v (\aop_{#1}-a_{#1})}
-We now consider when, given a vertex \(a\) of the cuboid \(\mathfrak{C}\), we can define a separating hyperplane \(\pi\) for \(\prodset\), that is, when \(\pi: \mathbb{R}^n \to \mathbb{R}\)
+We now consider when, given a vertex \(a\) of the cuboid \(\mathfrak{C}\), we can define a separating hyperplane \(\pi\) for \(\mathfrak{C}\), that is, when \(\pi: \mathbb{R}^n \to \mathbb{R}\)
 such that either \(\pi(x) \leq \prod_{v \in I}x_v\) for all \(x\) in \(\mathfrak{C}\) for all \(x\) in the vertex or \(\pi(x) \geq \prod_{v \in I}x_v\)
 for all \(x\) in \(\mathfrak{C}\). Furthermore, we want a good cut, so we look for hyperplanes such that \(\pi(y) = \prod_{v \in I}y_v\) for all vertices \(y\) in \(\mathfrak{C}\), adjacent to \(a\). 
 %
-In this section we denote the vertex opposite to \(a\), \(\aop\). Choosing a vertex, corresponds to picking for each interval \(v \in I\), 
+In this section we denote the vertex opposite to \(a\), as \(\aop\). Choosing a vertex, corresponds to picking for each interval \(v \in I\), 
 either the lower bound or the upper bound, so \(\aop\) is the vertex having as \(\aop_v = l_v\) if \(a_v = u_v\) and \(\aop_v = u_v\) otherwise.
 %
 Thus by defining \(d_v \coloneqq (\aop_v - a_v)e_v\), a vertex \(x \in \mathfrak{C}\) corresponds to a unique \(J \subset I\) such that \[x = a + \sum_{v \in J} d_v\]
