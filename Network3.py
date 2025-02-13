@@ -216,8 +216,8 @@ class network:
             z = z_C[i]
             x = v
             for index in loop:
-                m.addConstr(z <= x[index] / (V_max[index]**2))
-            m.addConstr(z+ sum(1 - x[index] / (V_max[index]**2) for index in loop) >= 1)
+                m.addConstr(z <= x[index] / (V_max[index]**2)) #ARTHUR Should be z <= x[index]*(prod_index(V_max[index]))
+            m.addConstr(z+ sum(1 - x[index] / (V_max[index]**2) for index in loop) >= 1) #ARTHUR z+sum(V_max[index]-x[index])>= prod_index(V_max[index]) ?
 
         
         if MIPGap is not None:
